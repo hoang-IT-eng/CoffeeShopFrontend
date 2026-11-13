@@ -61,7 +61,7 @@ export default function TablesPage() {
   const reservedCount = tables.filter((t) => t.status === 'Reserved').length;
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="board flex flex-col w-full">
       {/* Sub-header & Filter / Shortcut Strip */}
       <div className="w-full bg-surface-container-low px-gutter-desktop py-space-sm shadow-sm flex flex-wrap items-center justify-between gap-space-md">
         <div className="flex items-center gap-space-xs overflow-x-auto py-1 scrollbar-none">
@@ -111,19 +111,8 @@ export default function TablesPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-error animate-pulse" />
-              <span className="text-error font-bold">{reservedCount} Cần thanh toán / Đặt trước</span>
+              <span className="text-error font-bold">{reservedCount} Đặt</span>
             </div>
-          </div>
-          <div className="hidden xl:flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
-            <span className="px-space-sm py-1 rounded bg-surface-container font-mono shadow-sm">
-              F3: Chuyển bàn
-            </span>
-            <span className="px-space-sm py-1 rounded bg-surface-container font-mono shadow-sm">
-              F5: Gộp bàn
-            </span>
-            <span className="px-space-sm py-1 rounded bg-surface-container font-mono shadow-sm">
-              F6: Tách bàn
-            </span>
           </div>
         </div>
       </div>
@@ -142,10 +131,7 @@ export default function TablesPage() {
             <div className="flex items-center gap-space-sm">
               <span className="material-symbols-outlined text-secondary text-[24px]">coffee</span>
               <span className="font-headline-sm text-headline-sm text-primary font-bold">
-                Sơ đồ mặt bằng phục vụ
-              </span>
-              <span className="font-label-sm text-label-sm px-space-sm py-0.5 rounded-full bg-surface-container-high text-on-surface-variant">
-                Khu vực: {areaFilter === 'all' ? 'Tất cả' : areaFilter}
+                Sơ đồ bàn
               </span>
             </div>
             <div className="flex items-center gap-space-sm">
@@ -294,119 +280,6 @@ export default function TablesPage() {
             })}
           </div>
 
-          {/* Specialized Section: Takeaway & Online Delivery Queue Cards */}
-          <div className="mt-space-md">
-            <div className="flex items-center justify-between mb-space-sm">
-              <div className="flex items-center gap-space-xs">
-                <span className="material-symbols-outlined text-secondary text-[22px]">
-                  local_shipping
-                </span>
-                <span className="font-headline-sm text-headline-sm text-primary font-bold">
-                  Đơn mang đi &amp; Ứng dụng giao hàng
-                </span>
-                <span className="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-bold">
-                  Đang hoạt động
-                </span>
-              </div>
-              <Link
-                to="/payments"
-                className="font-label-sm text-label-sm text-secondary hover:underline flex items-center gap-1 font-semibold no-underline"
-              >
-                <span>Danh sách chờ thu ngân</span>
-                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-space-md">
-              <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between h-[155px] hover:shadow-md transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-space-xs">
-                    <span className="px-space-xs py-0.5 rounded bg-secondary-fixed font-mono font-bold text-label-sm text-on-secondary-fixed">
-                      #TK-802
-                    </span>
-                    <span className="font-label-md text-label-md font-bold text-on-surface">
-                      Khách Anh Tuấn
-                    </span>
-                  </div>
-                  <span className="px-space-sm py-0.5 rounded-full bg-[#dcfce7] text-[#15803d] font-label-sm text-label-sm font-bold flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">check</span>
-                    Đã sẵn sàng
-                  </span>
-                </div>
-                <div className="text-body-sm font-body-sm text-on-surface-variant line-clamp-2">
-                  2 Cold Brew Cam Vàng, 1 Croissant Hạnh Nhân
-                </div>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="font-price-display-md text-price-display-md text-primary font-bold">
-                    145.000đ
-                  </span>
-                  <Link
-                    to="/orders/new"
-                    className="px-space-md py-1.5 rounded-lg bg-primary-container text-on-primary font-label-sm text-label-sm no-underline"
-                  >
-                    Tạo đơn mới
-                  </Link>
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between h-[155px] hover:shadow-md transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-space-xs">
-                    <span className="px-space-xs py-0.5 rounded bg-[#00b14f]/15 text-[#00873c] font-mono font-bold text-label-sm">
-                      GrabFood #GF-19
-                    </span>
-                    <span className="font-label-md text-label-md font-bold text-on-surface">
-                      Tài xế Hoàng
-                    </span>
-                  </div>
-                  <span className="px-space-sm py-0.5 rounded-full bg-[#ffedd5] text-[#c2410c] font-label-sm text-label-sm font-bold flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px] animate-spin">sync</span>
-                    Đang pha chế
-                  </span>
-                </div>
-                <div className="text-body-sm font-body-sm text-on-surface-variant line-clamp-2">
-                  3 Cà Phê Trứng Hà Nội (ít đá, 50% ngọt)
-                </div>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="font-price-display-md text-price-display-md text-primary font-bold">
-                    177.000đ
-                  </span>
-                  <span className="font-label-sm text-label-sm text-on-surface-variant font-mono">
-                    Dự kiến: 3 phút
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between h-[155px] hover:shadow-md transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-space-xs">
-                    <span className="px-space-xs py-0.5 rounded bg-[#ee4d2d]/15 text-[#ee4d2d] font-mono font-bold text-label-sm">
-                      ShopeeFood #SF-44
-                    </span>
-                    <span className="font-label-md text-label-md font-bold text-on-surface">
-                      Tài xế Nam
-                    </span>
-                  </div>
-                  <span className="px-space-sm py-0.5 rounded-full bg-[#dbeafe] text-[#1e40af] font-label-sm text-label-sm font-bold">
-                    Tài xế đã đến
-                  </span>
-                </div>
-                <div className="text-body-sm font-body-sm text-on-surface-variant line-clamp-2">
-                  1 Latte Yến Mạch Nóng, 1 Tiramisu Cacao
-                </div>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="font-price-display-md text-price-display-md text-primary font-bold">
-                    130.000đ
-                  </span>
-                  <Link
-                    to="/orders"
-                    className="px-space-md py-1.5 rounded-lg bg-secondary text-on-secondary font-label-sm text-label-sm no-underline"
-                  >
-                    Mở KDS
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* RIGHT SECTION: Active Table Detail & Multi-method Checkout Panel */}

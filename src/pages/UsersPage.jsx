@@ -95,59 +95,14 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="flex flex-col w-full">
-      {/* Notification Banner / Micro Status */}
-      <div className="w-full bg-surface-container-high px-margin-desktop py-space-xs flex flex-wrap items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
-        <div className="flex items-center gap-space-sm">
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary" />
-          </span>
-          <span className="font-medium text-on-surface">Chi nhánh Trung Tâm (HCM-01)</span>
-          <span className="text-outline-variant">•</span>
-          <span>
-            Đồng bộ máy chấm công vân tay &amp; FaceID: <strong>3 phút trước</strong>
-          </span>
-        </div>
-        <div className="flex items-center gap-space-md">
-          <span className="flex items-center gap-space-xs">
-            <span className="material-symbols-outlined text-[16px]">wifi</span>
-            Máy POS Quầy chính: Online
-          </span>
-          <span className="text-outline-variant">•</span>
-          <span className="flex items-center gap-space-xs">
-            <span className="material-symbols-outlined text-[16px]">shield_person</span>
-            Cấp độ phân quyền: Admin Branch Manager
-          </span>
-        </div>
-      </div>
-
+    <div className="board flex flex-col w-full">
       <div className="w-full px-margin-desktop py-space-xl flex flex-col gap-space-xl max-w-[1680px] mx-auto">
         {/* Breadcrumb & Top Action Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg">
           <div className="flex flex-col gap-space-xs">
-            <nav className="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
-              <span>Quản Trị Cơ Sở</span>
-              <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span>Nhân Sự &amp; Vận Hành</span>
-              <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span className="text-primary font-bold">Quản Lý Nhân Viên &amp; Ca</span>
-            </nav>
-            <div className="flex items-center gap-space-sm mt-space-xs">
-              <span className="px-space-sm py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm tracking-wide">
-                HR &amp; Shift Attendance v2.4
-              </span>
-              <span className="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary inline-block" />
-                Chi nhánh hoạt động bình thường
-              </span>
-            </div>
-            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight mt-space-xs font-bold">
-              Quản Lý Nhân Viên &amp; Ca Trực
+            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">
+              Nhân viên
             </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl">
-              Theo dõi danh sách nhân sự, phân quyền vai trò (Admin, Thu ngân, Pha chế, Phục vụ), quản lý lịch ca trực và đối soát chốt tiền két bàn giao ca tại chỗ.
-            </p>
           </div>
 
           <div className="flex items-center flex-wrap gap-space-sm">

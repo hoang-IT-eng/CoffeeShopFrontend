@@ -29,7 +29,7 @@ export default function ShiftPage() {
 
   if (!form) {
     return (
-      <div className="p-space-2xl text-center font-label-md text-on-surface-variant">
+      <div className="board p-space-2xl text-center font-label-md text-on-surface-variant">
         Đang tải giao diện Mobile Waiter Order Tại Bàn...
       </div>
     );
@@ -78,7 +78,7 @@ export default function ShiftPage() {
   const total = cart.reduce((s, c) => s + c.price * c.quantity, 0);
 
   return (
-    <div className="max-w-lg mx-auto px-margin py-space-md pb-32 space-y-4">
+    <div className="board max-w-lg mx-auto px-margin py-space-md pb-32 space-y-4">
       {error && (
         <div className="p-space-md rounded-xl bg-error-container text-on-error-container">{error}</div>
       )}

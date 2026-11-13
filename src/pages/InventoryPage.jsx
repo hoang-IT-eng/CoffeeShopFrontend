@@ -115,32 +115,15 @@ export default function InventoryPage() {
   });
 
   return (
-    <div className="flex flex-col w-full pb-16">
+    <div className="board flex flex-col w-full pb-16">
       {/* BREADCRUMB & HEADER SECTION */}
       <div className="w-full px-margin-desktop py-space-xl bg-surface-container-low/70">
         <div className="max-w-[1600px] mx-auto flex flex-col gap-space-lg">
-          <nav className="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
-            <span>Quản Trị Cơ Sở</span>
-            <span className="material-symbols-outlined text-[16px] text-outline">chevron_right</span>
-            <span>Quản Lý Kho &amp; Nguyên Vật Liệu</span>
-            <span className="material-symbols-outlined text-[16px] text-outline">chevron_right</span>
-            <span className="text-on-surface font-bold">Tồn Kho &amp; Cảnh Báo</span>
-          </nav>
-
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-space-lg">
             <div className="flex flex-col gap-space-xs max-w-3xl">
-              <div className="flex items-center gap-space-sm">
-                <span className="w-3 h-3 rounded-full bg-secondary-container animate-pulse" />
-                <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">
-                  Thời Gian Thực • Chi Nhánh Trung Tâm
-                </span>
-              </div>
               <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">
-                Quản Lý Kho Nguyên Vật Liệu &amp; Cảnh Báo Hết Hàng
+                Kho
               </h1>
-              <p className="font-body-sm text-body-sm text-on-surface-variant">
-                Kiểm soát tồn kho định lượng thời gian thực, tự động trừ kho theo đơn bán POS/KDS, theo dõi hạn sử dụng và lập phiếu nhập/xuất hao hụt.
-              </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-space-sm flex-shrink-0">
@@ -150,7 +133,7 @@ export default function InventoryPage() {
                 className="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-high transition-all shadow-sm font-label-md text-label-md"
               >
                 <span className="material-symbols-outlined text-[18px]">table_view</span>
-                <span>Xuất Báo Cáo Excel</span>
+                <span>In</span>
               </button>
               <button
                 type="button"
@@ -160,7 +143,7 @@ export default function InventoryPage() {
                 <span className="material-symbols-outlined text-[18px] text-secondary">
                   add_circle
                 </span>
-                <span>+ Thêm Mặt Hàng Mới</span>
+                <span>Thêm</span>
               </button>
               <button
                 type="button"
@@ -168,7 +151,7 @@ export default function InventoryPage() {
                 className="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-error-container text-on-error-container hover:bg-error hover:text-on-error transition-all shadow-sm font-label-md text-label-md font-bold"
               >
                 <span className="material-symbols-outlined text-[18px]">delete_sweep</span>
-                <span>+ Xuất Hủy / Hao Hụt</span>
+                <span>Xuất hủy</span>
               </button>
               <button
                 type="button"
@@ -176,7 +159,7 @@ export default function InventoryPage() {
                 className="flex items-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-secondary-container text-on-secondary-container hover:bg-secondary hover:text-on-secondary transition-all shadow-[0_4px_14px_rgba(254,147,44,0.35)] font-label-md text-label-md font-bold"
               >
                 <span className="material-symbols-outlined text-[20px]">add_shopping_cart</span>
-                <span>+ Lập Phiếu Nhập Kho</span>
+                <span>Nhập kho</span>
               </button>
             </div>
           </div>
@@ -753,7 +736,7 @@ export default function InventoryPage() {
                       <span>
                         {widgetTab === 'deduct'
                           ? 'Xác Nhận Xuất Hủy & Trừ Kho'
-                          : 'Lưu & Tự Động Cộng Tồn Kho Ngay'}
+                          : 'Lưu'}
                       </span>
                     </button>
                   </div>
@@ -767,16 +750,10 @@ export default function InventoryPage() {
                 <div className="flex items-center gap-space-xs">
                   <span className="w-2.5 h-2.5 rounded-full bg-secondary-container animate-ping" />
                   <h2 className="font-headline-sm text-headline-sm text-primary font-bold">
-                    Nhật Ký Trừ Kho Tự Động
+                    Nhật ký kho
                   </h2>
                 </div>
-                <span className="px-space-xs py-0.5 rounded bg-surface-container-high text-on-surface-variant text-[11px] font-mono">
-                  SignalR Active
-                </span>
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface-variant">
-                Đồng bộ công thức định lượng (Recipe Auto-Deduction) theo thời gian thực từ quầy POS bán hàng:
-              </p>
 
               <div className="flex flex-col gap-space-md relative pl-4">
                 <div className="absolute left-1.5 top-2 bottom-2 w-0.5 bg-surface-container-high" />

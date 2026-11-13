@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import Lenis from 'lenis';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import ScrollStory from '../components/ScrollStory';
+import FrameStory from '../components/FrameStory';
 import '../styles/homepage.css';
 
 const MENU = [
@@ -115,7 +114,6 @@ export default function HomePage() {
     if (reduce) {
       const onScroll = () => {
         paint(window.scrollY);
-        ScrollTrigger.update();
       };
       onScroll();
       window.addEventListener('scroll', onScroll, { passive: true });
@@ -135,7 +133,6 @@ export default function HomePage() {
     });
     const onLenisScroll = (event) => {
       paint(event.scroll);
-      ScrollTrigger.update();
     };
     lenis.on('scroll', onLenisScroll);
     const tick = (time) => {
@@ -144,7 +141,6 @@ export default function HomePage() {
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
     paint(window.scrollY);
-    ScrollTrigger.update();
 
     return () => {
       gsap.ticker.remove(tick);
@@ -200,7 +196,7 @@ export default function HomePage() {
       </header>
 
       <main id="top">
-        <ScrollStory />
+        <FrameStory />
 
         <section className="hp-section hp-section--foam">
           <div className="hp-shell">

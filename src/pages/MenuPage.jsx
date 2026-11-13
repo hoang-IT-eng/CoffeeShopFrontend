@@ -84,23 +84,13 @@ export default function MenuPage() {
   const grossProfit = selectedItem ? selectedItem.price - cogsValue : 26550;
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="board flex flex-col w-full">
       {/* Sub-header / Top Navigation Utility Strip */}
       <div className="w-full px-margin-desktop py-space-md flex flex-col md:flex-row md:items-center justify-between gap-space-md">
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
-            <span>Quản Trị Cơ Sở</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span>Menu &amp; Sản Phẩm</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-secondary font-bold">Định Lượng &amp; Giá Vốn BOM</span>
-          </div>
           <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">
-            Quản Lý Thực Đơn &amp; Định Lượng (BOM)
+            Thực đơn
           </h1>
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
-            Tối ưu hóa giá vốn hàng bán (COGS), công thức pha chế định lượng và kiểm soát tỷ suất lợi nhuận thời gian thực.
-          </p>
         </div>
 
         <div className="flex items-center gap-space-sm flex-wrap">
@@ -110,7 +100,7 @@ export default function MenuPage() {
             className="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-all font-label-md text-label-md flex items-center gap-space-xs shadow-sm"
           >
             <span className="material-symbols-outlined text-[18px]">file_download</span>
-            <span>Xuất Excel Bảng Giá Vốn</span>
+            <span>In</span>
           </button>
           <Link
             to="/inventory"
@@ -126,7 +116,7 @@ export default function MenuPage() {
             <span className="material-symbols-outlined text-[18px] text-secondary-container">
               add_circle
             </span>
-            <span>+ Thêm Món Mới</span>
+            <span>Thêm món</span>
           </Link>
         </div>
       </div>

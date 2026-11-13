@@ -35,7 +35,7 @@ export default function CustomerFormPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-lg">
+    <div className="board max-w-3xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-lg">
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-space-xs text-on-surface-variant font-label-sm">

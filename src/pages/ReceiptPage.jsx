@@ -26,21 +26,21 @@ export default function ReceiptPage() {
 
   if (error) {
     return (
-      <div className="p-space-xl max-w-xl mx-auto mt-space-xl rounded-xl bg-error-container text-on-error-container">
+      <div className="board p-space-xl max-w-xl mx-auto mt-space-xl rounded-xl bg-error-container text-on-error-container">
         {error}
       </div>
     );
   }
   if (!payment) {
     return (
-      <div className="p-space-2xl text-center font-label-md text-on-surface-variant">
+      <div className="board p-space-2xl text-center font-label-md text-on-surface-variant">
         Đang tải hóa đơn...
       </div>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto px-margin py-space-xl flex flex-col gap-space-md">
+    <div className="board max-w-lg mx-auto px-margin py-space-xl flex flex-col gap-space-md">
       {message && (
         <div className="p-space-md rounded-xl bg-secondary-fixed text-on-secondary-fixed font-label-md">
           {message}

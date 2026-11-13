@@ -73,7 +73,7 @@ export default function CustomersPage() {
   });
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="board flex flex-col w-full">
       {toast && (
         <div className="fixed bottom-12 right-8 z-50 flex items-center gap-space-sm px-space-md py-space-sm rounded-xl bg-primary text-on-primary shadow-xl">
           <span className="material-symbols-outlined text-secondary-container text-[20px]">
@@ -86,28 +86,11 @@ export default function CustomersPage() {
       <div className="px-margin-desktop py-space-xl flex flex-col gap-space-xl max-w-[1720px] mx-auto w-full">
         {/* 1. BREADCRUMB & PAGE HEADER */}
         <div className="flex flex-col gap-space-sm">
-          <nav className="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
-            <span>Quản Trị Cơ Sở</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span>Khách Hàng &amp; Marketing</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-bold">Khách Hàng &amp; Khuyến Mãi</span>
-          </nav>
-
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg pt-1">
             <div className="flex flex-col gap-1 max-w-3xl">
-              <div className="flex items-center gap-space-xs">
-                <span className="px-space-xs py-0.5 rounded-full bg-secondary-container/20 text-on-secondary-container font-label-sm text-label-sm inline-flex items-center gap-1 font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-secondary-container" />
-                  CRM &amp; Promotion Engine v2.4
-                </span>
-              </div>
               <h1 className="font-headline-lg text-headline-lg tracking-tight text-primary font-bold">
-                Quản Lý Hội Viên &amp; Chương Trình Khuyến Mãi
+                Khách hàng
               </h1>
-              <p className="font-body-md text-body-md text-on-surface-variant">
-                Quản lý hồ sơ khách hàng thân thiết, hệ thống tích lũy điểm thưởng và cấu hình voucher ưu đãi áp dụng tự động tại quầy POS &amp; Waiter app.
-              </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-space-sm flex-shrink-0">
@@ -117,7 +100,7 @@ export default function CustomersPage() {
                 className="px-space-md py-space-sm rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-label-md transition-all flex items-center gap-space-xs shadow-sm"
               >
                 <span className="material-symbols-outlined text-[18px]">file_download</span>
-                <span>Xuất Danh Sách Excel</span>
+                <span>In</span>
               </button>
               <Link
                 to="/customers/new"

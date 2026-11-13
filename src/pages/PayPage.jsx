@@ -36,7 +36,7 @@ export default function PayPage() {
 
   if (!order) {
     return (
-      <div className="p-space-2xl text-center font-label-md text-on-surface-variant">
+      <div className="board p-space-2xl text-center font-label-md text-on-surface-variant">
         Đang tải thông tin thanh toán...
       </div>
     );
@@ -45,7 +45,7 @@ export default function PayPage() {
   const change = Math.max(0, Number(tender || 0) - order.total);
 
   return (
-    <div className="max-w-4xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-lg">
+    <div className="board max-w-4xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-lg">
       <div className="flex items-center justify-between">
         <div>
           <span className="font-label-sm text-secondary uppercase font-bold">

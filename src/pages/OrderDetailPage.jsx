@@ -13,21 +13,21 @@ export default function OrderDetailPage() {
 
   if (error) {
     return (
-      <div className="p-space-xl max-w-3xl mx-auto mt-space-xl rounded-xl bg-error-container text-on-error-container">
+      <div className="board p-space-xl max-w-3xl mx-auto mt-space-xl rounded-xl bg-error-container text-on-error-container">
         {error}
       </div>
     );
   }
   if (!order) {
     return (
-      <div className="p-space-2xl text-center font-label-md text-on-surface-variant">
+      <div className="board p-space-2xl text-center font-label-md text-on-surface-variant">
         Đang tải chi tiết đơn hàng...
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-lg">
+    <div className="board max-w-4xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-lg">
       <div className="flex items-center justify-between flex-wrap gap-space-md">
         <div>
           <div className="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">

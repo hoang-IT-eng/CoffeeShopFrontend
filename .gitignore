@@ -4,3 +4,11 @@ dist
 *.local
 .env
 .env.*
+public/frames/
+.codex/
+.gemini/
+.claude/
+.agent/
+.agents/
+.kiro/
+.devin/

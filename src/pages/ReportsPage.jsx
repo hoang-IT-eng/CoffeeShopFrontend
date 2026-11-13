@@ -103,27 +103,14 @@ export default function ReportsPage() {
   const displayGrossProfit = Math.round(displayRevenue * 0.64);
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="board flex flex-col w-full">
       {/* Control Header & Filtering Deck */}
       <div className="w-full px-margin-desktop py-space-xl flex flex-col gap-space-lg">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
           <div className="flex flex-col gap-space-xs">
-            <div className="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
-              <span>Quản Trị Cơ Sở</span>
-              <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span>Tài Chính &amp; Báo Cáo</span>
-              <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span className="text-secondary font-bold">Báo Cáo &amp; Thống Kê Chuyên Sâu</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-space-md">
-              <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">
-                Trung Tâm Báo Cáo Tài Chính &amp; Hiệu Suất F&amp;B
-              </h1>
-              <span className="inline-flex items-center gap-1.5 px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-secondary-container animate-ping" />
-                Analytics v2.4 • Dữ liệu chốt sổ thời gian thực
-              </span>
-            </div>
+            <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight font-bold">
+              Báo cáo
+            </h1>
           </div>
 
           <div className="flex flex-wrap items-center gap-space-sm">
@@ -135,7 +122,7 @@ export default function ReportsPage() {
               <span className="material-symbols-outlined text-[18px] text-secondary">
                 table_view
               </span>
-              <span>Xuất Báo Cáo Excel</span>
+              <span>In</span>
             </button>
             <button
               type="button"

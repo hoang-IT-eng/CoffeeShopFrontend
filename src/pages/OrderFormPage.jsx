@@ -164,7 +164,7 @@ export default function OrderFormPage() {
 
   if (!form) {
     return (
-      <div className="p-space-2xl text-center font-label-md text-on-surface-variant">
+      <div className="board p-space-2xl text-center font-label-md text-on-surface-variant">
         Đang mở quầy POS bán hàng...
       </div>
     );
@@ -173,7 +173,7 @@ export default function OrderFormPage() {
   const changeAmount = Number(cashGiven || 0) - total;
 
   return (
-    <div className="w-full px-gutter-desktop py-space-md">
+    <div className="board w-full px-gutter-desktop py-space-md">
       {error && (
         <div className="mb-space-md p-space-md rounded-xl bg-error-container text-on-error-container font-label-md flex items-center justify-between">
           <div className="flex items-center gap-2">

@@ -11,16 +11,11 @@ export default function PaymentsPage() {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-xl">
+    <div className="board max-w-7xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
         <div>
-          <div className="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
-            <span>Thu Ngân &amp; Két Tiền</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-secondary font-bold">Đơn Sẵn Sàng Thu Tiền</span>
-          </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary font-bold tracking-tight mt-1">
-            Quầy Thu Ngân &amp; Thanh Toán Hóa Đơn
+          <h1 className="font-headline-lg text-headline-lg text-primary font-bold tracking-tight">
+            Thu ngân
           </h1>
         </div>
         <Link

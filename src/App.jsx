@@ -40,7 +40,7 @@ function RequireRole({ roles, children }) {
   const { user } = useAuth();
   if (!hasRole(user, ...roles)) {
     return (
-      <div className="p-space-xl max-w-xl mx-auto mt-space-2xl rounded-xl bg-error-container text-on-error-container shadow-md flex items-center gap-space-md">
+      <div className="board p-space-xl max-w-xl mx-auto mt-space-2xl rounded-xl bg-error-container text-on-error-container shadow-md flex items-center gap-space-md">
         <span className="material-symbols-outlined text-[28px]">gpp_maybe</span>
         <div>
           <h2 className="font-headline-sm text-headline-sm font-bold">Không có quyền truy cập (403)</h2>

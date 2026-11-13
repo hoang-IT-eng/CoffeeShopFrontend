@@ -26,14 +26,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col justify-between relative overflow-hidden">
+    <div className="board min-h-screen flex flex-col justify-between relative overflow-hidden">
       <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-secondary-container/15 blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-primary-container/10 blur-3xl pointer-events-none" />
 
       <div className="flex-grow flex items-center justify-center p-margin">
         <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 rounded-2xl bg-surface-container-lowest shadow-2xl overflow-hidden border border-surface-container-highest">
           {/* Left Branding Panel */}
-          <div className="md:col-span-5 bg-primary-container text-on-primary p-space-2xl flex flex-col justify-between relative overflow-hidden">
+          <div className="md:col-span-5 p-space-2xl flex flex-col justify-between relative overflow-hidden" style={{ background: "#141210", color: "#f6f1ea" }}>
             <div className="absolute -right-12 -bottom-12 w-48 h-48 rounded-full bg-secondary-container/15 blur-2xl pointer-events-none" />
             <div className="flex flex-col gap-space-md">
               <div className="flex items-center gap-space-sm">
@@ -51,16 +51,9 @@ export default function LoginPage() {
               </div>
 
               <div className="mt-space-lg space-y-space-sm">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold">
-                  <span className="w-2 h-2 rounded-full bg-secondary animate-ping" />
-                  SignalR Realtime v3.4
-                </span>
                 <h2 className="font-headline-md text-headline-md font-bold leading-snug">
-                  Hệ Thống Điều Hành Quán Cà Phê &amp; Chuỗi F&amp;B
+                  An Roastery
                 </h2>
-                <p className="font-body-sm text-body-sm text-on-primary-container leading-relaxed">
-                  Đồng bộ tức thời từ Gọi món tại bàn, Thu ngân VietQR Pro, Màn hình KDS Pha chế đến Định lượng giá vốn BOM &amp; Quản trị kho.
-                </p>
               </div>
             </div>
 
@@ -79,15 +72,9 @@ export default function LoginPage() {
           {/* Right Form Panel */}
           <form className="md:col-span-7 p-space-2xl flex flex-col justify-center gap-space-md" onSubmit={onSubmit}>
             <div>
-              <span className="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-bold">
-                Xác thực ca làm việc
-              </span>
-              <h1 className="font-headline-lg text-headline-lg text-primary font-bold tracking-tight mt-1">
-                Đăng Nhập Hệ Thống
+              <h1 className="font-headline-lg text-headline-lg text-primary font-bold tracking-tight">
+                Đăng nhập
               </h1>
-              <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-                Nhập thông tin tài khoản nhân sự để mở ca POS hoặc truy cập trung tâm quản trị.
-              </p>
             </div>
 
             {error && (
