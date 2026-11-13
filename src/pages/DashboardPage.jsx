@@ -64,7 +64,6 @@ export default function DashboardPage() {
   const week = data.week || [];
   const weekMax = Math.max(1, ...week.map((day) => Number(day.revenue) || 0));
   const showWeek = week.some((day) => Number(day.revenue) > 0);
-  const showSpark = week.filter((day) => Number(day.revenue) > 0).length >= 2;
   const openCount = (Number(data.openNew) || 0) + (Number(data.openMaking) || 0) + (Number(data.openReady) || 0);
   const tableCount = Number(data.tableCount) || (data.tables || []).length;
   const inUse = Number(data.tablesInUse) || 0;
@@ -86,7 +85,7 @@ export default function DashboardPage() {
       <header className="board-head">
         <div>
           <h1>Tổng quan</h1>
-          <p>{openCount} đơn đang mở · {inUse} bàn có khách</p>
+          <p>{openCount} đơn đang mở · {inUse}/{tableCount || 0} bàn có khách</p>
         </div>
         <div className="board-tools">
           <div className="board-range" role="group" aria-label="Khoảng thời gian">
@@ -101,66 +100,38 @@ export default function DashboardPage() {
               </button>
             ))}
           </div>
-          <Link className="board-sell" to="/orders/new">+ Bán hàng</Link>
+          <Link className="board-sell" to="/orders/new">Bán hàng</Link>
         </div>
       </header>
       {error && <p className="board-banner">{error}</p>}
 
-      <section className="board-top">
-        <article className="board-hero">
-          <div className="board-hero-photo" aria-hidden="true" />
-          <div className="board-hero-shade" aria-hidden="true" />
-          <div className="board-hero-copy">
-            <p className="board-kicker">Doanh thu</p>
-            <strong>{money(revenue)}<span>đ</span></strong>
-            <em>{delta}</em>
-            {showHeroBars && (
-              <div className="board-hero-bars" aria-hidden="true">
-                {barPoints.map((point) => (
-                  <i key={point.label} style={{ height: `${Math.round(((Number(point.revenue) || 0) / maxPoint) * 100)}%` }} />
-                ))}
-              </div>
-            )}
-          </div>
-        </article>
-        <article className="board-kpi">
-          <p>Đơn đang mở</p>
-          <strong>{openCount}</strong>
-          <p className="board-note">{data.openNew || 0} mới · {data.openMaking || 0} đang pha · {data.openReady || 0} chờ trả</p>
-        </article>
-        <article className="board-kpi">
-          <p>Bàn có khách</p>
-          <strong>{inUse}<span>/{tableCount || 0}</span></strong>
-          {showSpark && (
-            <svg className="board-area" viewBox="0 0 120 48" aria-hidden="true">
-              <polyline
-                fill="none"
-                stroke="#2fcaa6"
-                strokeWidth="3"
-                points={week.map((day, index) => {
-                  const x = week.length < 2 ? 0 : (index / (week.length - 1)) * 120;
-                  const y = 44 - ((Number(day.revenue) || 0) / weekMax) * 36;
-                  return `${x},${y}`;
-                }).join(' ')}
-              />
-            </svg>
-          )}
-        </article>
-        <article className="board-kpi">
-          <p>Bàn đang dùng</p>
-          <strong>{occupancy}<span>%</span></strong>
-          {(data.tables || []).length > 0 && (
-            <div className="board-dots" aria-hidden="true">
-              {(data.tables || []).slice(0, 18).map((table) => (
-                <i key={table.id} className={table.status === 'Occupied' || table.status === 'Reserved' ? 'is-on' : ''} />
+      <section className="board-strip" aria-label="Số liệu chính">
+        <article className="board-revenue">
+          <h2>Doanh thu</h2>
+          <strong>{money(revenue)}<span>đ</span></strong>
+          <em>{delta}</em>
+          {showHeroBars && (
+            <div className="board-sparkline" aria-hidden="true">
+              {barPoints.map((point) => (
+                <i key={point.label} style={{ height: `${Math.round(((Number(point.revenue) || 0) / maxPoint) * 100)}%` }} />
               ))}
             </div>
           )}
         </article>
-        <article className="board-kpi">
+        <article className="board-metric">
+          <p>Đơn đang mở</p>
+          <strong>{openCount}</strong>
+          <p className="board-note">{data.openNew || 0} mới · {data.openMaking || 0} pha · {data.openReady || 0} chờ</p>
+        </article>
+        <article className="board-metric">
+          <p>Bàn có khách</p>
+          <strong>{inUse}<span>/{tableCount || 0}</span></strong>
+          <p className="board-note">{occupancy}% sàn đang dùng</p>
+        </article>
+        <article className="board-metric">
           <p>Cảnh báo kho</p>
           <strong>{data.totalWarnings || 0}</strong>
-          <p className="board-note">{warnings[0]?.name || 'Không có mục dưới ngưỡng'}</p>
+          <p className="board-note">{warnings[0]?.name || 'Kho ổn'}</p>
         </article>
       </section>
 
@@ -198,7 +169,7 @@ export default function DashboardPage() {
                 ))}
               </tbody>
             </table>
-            {!rows.length && <p className="board-note">Chưa có đơn.</p>}
+            {!rows.length && <p className="board-note">Chưa có đơn trong kỳ này.</p>}
           </div>
         </article>
 
@@ -247,33 +218,44 @@ export default function DashboardPage() {
             <p className="board-note">Chưa có doanh thu trong 7 ngày.</p>
           )}
         </article>
+
         <article className="board-card">
-          <div className="board-card-head"><h2>Sàn quán</h2></div>
-          <div className="board-dots" style={{ marginTop: 8 }}>
+          <div className="board-card-head">
+            <div>
+              <h2>Sàn quán</h2>
+              <p>{inUse} bàn đang có khách</p>
+            </div>
+            <Link to="/tables">Sơ đồ</Link>
+          </div>
+          <div className="board-floor-list">
             {(data.tables || []).map((table) => (
-              <Link key={table.id} to="/tables" title={table.name} style={{ color: 'inherit', textDecoration: 'none', fontSize: 12 }}>
-                <i className={table.status === 'Occupied' ? 'is-on' : ''} /> {table.name}
+              <Link
+                key={table.id}
+                to="/tables"
+                className={table.status === 'Occupied' || table.status === 'Reserved' ? 'is-on' : ''}
+                title={table.name}
+              >
+                <i aria-hidden="true" />
+                {table.name}
               </Link>
             ))}
+            {!(data.tables || []).length && <p className="board-note">Chưa có bàn.</p>}
           </div>
         </article>
+
         <article className="board-card">
-          <div className="board-card-head"><h2>Sàn đang dùng</h2></div>
-          <div className="board-ring">
-            <svg viewBox="0 0 120 120" aria-hidden="true">
-              <circle cx="60" cy="60" r="46" fill="none" stroke="#342e2a" strokeWidth="10" />
-              <circle cx="60" cy="60" r="46" fill="none" stroke="#ff5c1c" strokeWidth="10" strokeLinecap="round" strokeDasharray={`${(occupancy / 100) * 289} 289`} />
-            </svg>
-            <strong>{occupancy}%</strong>
+          <div className="board-card-head">
+            <div>
+              <h2>Trong ca</h2>
+              <p>Nhịp bếp hiện tại</p>
+            </div>
           </div>
-          <p className="board-foot">{inUse} bàn có khách trên {tableCount} bàn</p>
-        </article>
-        <article className="board-card">
-          <div className="board-card-head"><h2>Trong ca</h2></div>
-          <p className="board-note">{data.openNew || 0} đơn mới</p>
-          <p className="board-note">{data.openMaking || 0} đang pha</p>
-          <p className="board-note">{data.openReady || 0} chờ trả</p>
-          <p className="board-note">{Number(data.ordersPerHour || 0).toLocaleString('vi-VN')} đơn mỗi giờ</p>
+          <ul className="board-shift-list">
+            <li><span>Đơn mới</span><b>{data.openNew || 0}</b></li>
+            <li><span>Đang pha</span><b>{data.openMaking || 0}</b></li>
+            <li><span>Chờ trả</span><b>{data.openReady || 0}</b></li>
+            <li><span>Đơn / giờ</span><b>{Number(data.ordersPerHour || 0).toLocaleString('vi-VN')}</b></li>
+          </ul>
         </article>
       </section>
     </div>

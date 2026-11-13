@@ -111,18 +111,9 @@ export default function OrdersPage() {
   const average = orders.length
     ? orders.reduce((sum, order) => sum + Number(order.total || 0), 0) / orders.length
     : 0;
-  const points = dash?.points || dash?.week || [];
-  const barPoints = points.slice(-16);
-  const maxPoint = Math.max(1, ...barPoints.map((point) => Number(point.revenue) || 0));
-  const showHeroBars = barPoints.some((point) => Number(point.revenue) > 0);
-  const spark = points.slice(-12);
-  const showSpark = spark.filter((point) => Number(point.revenue) > 0).length >= 2;
   const week = dash?.week || [];
   const weekMax = Math.max(1, ...week.map((day) => Number(day.revenue) || 0));
   const showWeek = week.some((day) => Number(day.revenue) > 0);
-  const openOrders = orders.filter((order) => order.status !== 'Completed' && order.status !== 'Cancelled');
-  const openMax = Math.max(1, ...openOrders.map((order) => Number(order.total) || 0));
-  const orderMax = Math.max(1, ...orders.map((order) => Number(order.total) || 0));
 
   const itemTotals = new Map();
   orders.forEach((order) => {
@@ -134,6 +125,7 @@ export default function OrdersPage() {
   });
   const topItems = [...itemTotals.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
   const itemMax = Math.max(1, ...topItems.map((item) => item[1]));
+  const itemSum = Math.max(1, [...itemTotals.values()].reduce((a, b) => a + b, 0));
 
   const tableTotals = new Map();
   orders.forEach((order) => {
@@ -150,13 +142,16 @@ export default function OrdersPage() {
     : `${revenue >= previous ? '+' : ''}${Math.round(((revenue - previous) / previous) * 100)}% so với kỳ trước`;
 
   const shots = (selected?.details || []).slice(0, 2);
+  const sparkPoints = (dash?.points || week).slice(-12);
+  const sparkMax = Math.max(1, ...sparkPoints.map((point) => Number(point.revenue) || 0));
+  const showSpark = sparkPoints.some((point) => Number(point.revenue) > 0);
 
   return (
     <div className="board">
       <header className="board-head">
         <div>
-          <h1>Đơn hàng</h1>
-          <p>{openCount} đơn đang mở</p>
+          <h1>Bếp và đơn</h1>
+          <p>{openCount} đơn đang mở · {doneRatio}% đã thu</p>
         </div>
         <div className="board-tools">
           <div className="board-range" role="group" aria-label="Khoảng doanh thu">
@@ -166,90 +161,41 @@ export default function OrdersPage() {
               </button>
             ))}
           </div>
-          <Link className="board-sell" to="/orders/new">+ Bán hàng</Link>
+          <Link className="board-sell" to="/orders/new">Bán hàng</Link>
         </div>
       </header>
 
       {error && <p className="board-banner">{error}</p>}
-      {message && <p className="board-banner">{message}</p>}
+      {message && <p className="board-banner" style={{ color: 'var(--an-ok)' }}>{message}</p>}
       {loading && !dash && <p className="board-loading">Đang tải đơn.</p>}
 
-      <section className="board-top">
-        <article className="board-hero">
-          <div className="board-hero-photo" aria-hidden="true" />
-          <div className="board-hero-shade" aria-hidden="true" />
-          <div className="board-hero-copy">
-            <p className="board-kicker">Doanh thu</p>
-            <strong>{money(revenue)}<span>đ</span></strong>
-            <em>{delta}</em>
-            {showHeroBars && (
-              <div className="board-hero-bars" aria-hidden="true">
-                {barPoints.map((point) => (
-                  <i key={point.label} style={{ height: `${Math.round(((Number(point.revenue) || 0) / maxPoint) * 100)}%` }} />
-                ))}
-              </div>
-            )}
-          </div>
+      <section className="board-strip" aria-label="Số liệu đơn">
+        <article className="board-revenue">
+          <h2>Doanh thu kỳ</h2>
+          <strong>{money(revenue)}<span>đ</span></strong>
+          <em>{delta}</em>
+          {showSpark && (
+            <div className="board-sparkline" aria-hidden="true">
+              {sparkPoints.map((point) => (
+                <i key={point.label} style={{ height: `${Math.round(((Number(point.revenue) || 0) / sparkMax) * 100)}%` }} />
+              ))}
+            </div>
+          )}
         </article>
-
-        <article className="board-kpi">
+        <article className="board-metric">
           <p>Đơn đang mở</p>
           <strong>{openCount}</strong>
-          {openOrders.length > 0 && (
-            <div className="board-cols" aria-hidden="true">
-              {openOrders.slice(0, 10).map((order) => (
-                <span className="board-col" key={order.id}>
-                  <i
-                    className={order.status === 'New' ? 'is-new' : 'is-making'}
-                    style={{ height: `${Math.max(18, Math.round(((Number(order.total) || 0) / openMax) * 100))}%`, flex: 'none' }}
-                  />
-                </span>
-              ))}
-            </div>
-          )}
+          <p className="board-note">{orders.length} đơn trong danh sách</p>
         </article>
-
-        <article className="board-kpi">
-          <p>Đơn trong kỳ</p>
+        <article className="board-metric">
+          <p>Trong kỳ</p>
           <strong>{dash?.orderCount ?? orders.length}</strong>
-          {showSpark && (
-            <svg className="board-area" viewBox="0 0 120 48" aria-hidden="true">
-              <polyline
-                fill="none"
-                stroke="#2fcaa6"
-                strokeWidth="3"
-                points={spark.map((point, index) => {
-                  const x = spark.length < 2 ? 0 : (index / (spark.length - 1)) * 120;
-                  const y = 44 - ((Number(point.revenue) || 0) / maxPoint) * 36;
-                  return `${x},${y}`;
-                }).join(' ')}
-              />
-            </svg>
-          )}
+          <p className="board-note">{doneCount} đã thu</p>
         </article>
-
-        <article className="board-kpi">
-          <p>Đơn đã xong</p>
-          <strong>{doneRatio}<span>%</span></strong>
-          {orders.length > 0 && (
-            <div className="board-dots" aria-hidden="true">
-              {orders.slice(0, 18).map((order, index) => (
-                <i key={order.id} className={index < Math.round((doneRatio / 100) * Math.min(orders.length, 18)) ? 'is-on' : ''} />
-              ))}
-            </div>
-          )}
-        </article>
-
-        <article className="board-kpi">
-          <p>Trung bình một đơn</p>
+        <article className="board-metric">
+          <p>Trung bình đơn</p>
           <strong>{money(average)}<span>đ</span></strong>
-          {orders.length > 0 && (
-            <div className="board-scatter" aria-hidden="true">
-              {orders.slice(0, 12).map((order) => (
-                <i key={order.id} style={{ height: `${Math.max(8, Math.round(((Number(order.total) || 0) / orderMax) * 100))}%` }} />
-              ))}
-            </div>
-          )}
+          <p className="board-note">{doneRatio}% hoàn tất</p>
         </article>
       </section>
 
@@ -286,7 +232,11 @@ export default function OrdersPage() {
                   const qty = (order.details || []).reduce((sum, detail) => sum + Number(detail.quantity || 0), 0);
                   const first = order.details?.[0]?.name || order.customerName || 'Khách';
                   return (
-                    <tr key={order.id} className={selected?.id === order.id ? 'is-on' : ''} onClick={() => setSelectedId(order.id)}>
+                    <tr
+                      key={order.id}
+                      className={selected?.id === order.id ? 'is-on' : ''}
+                      onClick={() => setSelectedId(order.id)}
+                    >
                       <td>{order.tableName || 'Mang đi'}</td>
                       <td>#{order.id}</td>
                       <td>{first}</td>
@@ -318,7 +268,7 @@ export default function OrdersPage() {
                   <div className="board-shot" key={detail.id || index}>
                     {detail.imageUrl && <img src={detail.imageUrl} alt="" />}
                     <strong>{detail.name || 'Món'}</strong>
-                    <span>{detail.quantity ? `${detail.quantity} phần` : 'Chưa ghi món'} · {detail.price ? vnd(detail.price) : ''}</span>
+                    <span>{detail.quantity ? `${detail.quantity} phần` : 'Chưa ghi món'}{detail.price ? ` · ${vnd(detail.price)}` : ''}</span>
                   </div>
                 ))}
               </div>
@@ -351,7 +301,7 @@ export default function OrdersPage() {
               </div>
             </>
           ) : (
-            <p className="board-note">Chọn một đơn trong danh sách.</p>
+            <p className="board-note">Chọn một đơn trong danh sách để xem chi tiết và cập nhật trạng thái.</p>
           )}
         </article>
       </section>
@@ -385,7 +335,7 @@ export default function OrdersPage() {
               <div key={name}>
                 <span>{name}</span>
                 <div className="board-line"><i style={{ width: `${Math.round((qty / itemMax) * 100)}%` }} /></div>
-                <b>{Math.round((qty / Math.max(1, [...itemTotals.values()].reduce((a, b) => a + b, 0))) * 100)}%</b>
+                <b>{Math.round((qty / itemSum) * 100)}%</b>
               </div>
             ))}
             {!topItems.length && <p className="board-note">Chưa có món trong các đơn này.</p>}
@@ -404,30 +354,8 @@ export default function OrdersPage() {
                 <b>{money(total)}</b>
               </div>
             ))}
+            {!topTables.length && <p className="board-note">Chưa có dữ liệu bàn.</p>}
           </div>
-        </article>
-
-        <article className="board-card">
-          <div className="board-card-head">
-            <h2>Đơn đã thu</h2>
-          </div>
-          <div className="board-ring">
-            <svg viewBox="0 0 120 120" aria-hidden="true">
-              <circle cx="60" cy="60" r="46" fill="none" stroke="#342e2a" strokeWidth="10" />
-              <circle
-                cx="60"
-                cy="60"
-                r="46"
-                fill="none"
-                stroke="#ff5c1c"
-                strokeWidth="10"
-                strokeLinecap="round"
-                strokeDasharray={`${(doneRatio / 100) * 289} 289`}
-              />
-            </svg>
-            <strong>{doneRatio}%</strong>
-          </div>
-          <p className="board-foot">{doneCount} trên {orders.length} đơn trong danh sách</p>
         </article>
       </section>
     </div>

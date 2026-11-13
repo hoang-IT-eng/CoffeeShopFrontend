@@ -27,7 +27,7 @@ function RequireAuth({ children }) {
       <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="flex items-center gap-space-sm px-space-lg py-space-md rounded-xl bg-surface-container-lowest shadow-md">
           <span className="material-symbols-outlined text-secondary animate-spin">sync</span>
-          <span className="font-label-md text-label-md text-primary font-bold">Đang khởi tạo hệ thống Artisan POS...</span>
+          <span className="font-label-md text-label-md text-primary font-bold">Đang mở An Roastery...</span>
         </div>
       </div>
     );
