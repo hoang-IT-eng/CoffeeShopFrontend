@@ -13,7 +13,9 @@ const HOLD_START = 0.05;
 const HOLD_END = 0.08;
 const LOADERS = 6;
 
-const frameSrc = (index) => `/frames/${String(index).padStart(4, '0')}.webp?v=720`;
+const FRAMES_BASE = String(import.meta.env.VITE_FRAMES_BASE_URL || '/frames').replace(/\/$/, '');
+const frameSrc = (index) => `${FRAMES_BASE}/${String(index).padStart(4, '0')}.webp?v=720`;
+const framesAreRemote = /^https?:\/\//i.test(FRAMES_BASE);
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 const lerp = (from, to, t) => from + (to - from) * t;
 const smooth = (edge0, edge1, value) => {
@@ -193,6 +195,7 @@ export default function FrameStory() {
       cursor += 1;
       const img = new Image();
       img.decoding = 'async';
+      if (framesAreRemote) img.crossOrigin = 'anonymous';
       img.src = frameSrc(index);
       img
         .decode()
