@@ -4,6 +4,7 @@ dist
 *.local
 .env
 .env.*
+!.env.production
 public/frames/
 .codex/
 .gemini/

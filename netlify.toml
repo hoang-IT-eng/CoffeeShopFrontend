@@ -1,0 +1,6 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  VITE_FRAMES_BASE_URL = "https://anroasteryframes.blob.core.windows.net/frames"
