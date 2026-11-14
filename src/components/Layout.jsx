@@ -82,9 +82,9 @@ export default function Layout() {
       />
       <aside className={open ? 'ember-side is-open' : 'ember-side'}>
         <div className="ember-side-top">
-          <NavLink to="/dashboard" className="ember-brand">
+          <NavLink to="/dashboard" className="ember-brand" aria-label="An Roastery — Tổng quan">
             <span className="ember-mark" aria-hidden="true">
-              <span className="material-symbols-outlined">local_fire_department</span>
+              <span className="material-symbols-outlined">local_cafe</span>
             </span>
             <strong>An Roastery</strong>
           </NavLink>
