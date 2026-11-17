@@ -5,6 +5,7 @@ import App from './App';
 import { AuthProvider } from './auth';
 import { LanguageProvider } from './i18n';
 import './styles/app.css';
+import './styles/ops.css';
 
 document.body.classList.add('app-body');
 

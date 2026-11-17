@@ -1,105 +1,113 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, vnd, when } from '../api';
+import { api } from '../api';
+import { useLang } from '../i18n';
+import OpsIcon from '../components/OpsIcons';
 
 export default function PaymentsPage() {
+  const { t, trData, money, clock } = useLang();
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    api('/api/payments/ready').then(setOrders).catch((err) => setError(err.message));
+  const load = useCallback(async () => {
+    try {
+      const list = await api('/api/payments/ready');
+      setOrders(list || []);
+    } catch (err) {
+      setError(err.message);
+    }
   }, []);
 
+  useEffect(() => {
+    load();
+  }, [load]);
+
   return (
-    <div className="board max-w-7xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-xl">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+    <div className="ops-page">
+      <header className="ops-header">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-primary font-bold tracking-tight">
-            Thu ngân
-          </h1>
+          <h1>{t('ops.payments.title')}</h1>
+          <p>{t('ops.payments.subtitle')}</p>
         </div>
-        <Link
-          to="/tables"
-          className="px-space-lg py-space-sm rounded-xl bg-primary-container text-on-primary font-label-md font-bold flex items-center gap-2 no-underline shadow-sm"
+
+        <div className="ops-actions">
+          <button type="button" className="ops-btn" onClick={load}>
+            <OpsIcon name="refresh" size={15} />
+            <span>{t('ops.floor.refresh')}</span>
+          </button>
+          <Link to="/tables" className="ops-btn ops-btn--primary">
+            <OpsIcon name="floor" size={15} />
+            <span>{t('ops.payments.backToFloor')}</span>
+          </Link>
+        </div>
+      </header>
+
+      {error && <div className="ops-alert">{error}</div>}
+
+      {orders.length === 0 ? (
+        <section
+          className="ops-panel"
+          style={{ padding: '42px 24px', textAlign: 'center' }}
         >
-          <span className="material-symbols-outlined text-secondary-container text-[20px]">table_bar</span>
-          <span>Về Sơ Đồ Bàn</span>
-        </Link>
-      </div>
-
-      {error && (
-        <div className="p-space-md rounded-xl bg-error-container text-on-error-container">{error}</div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-space-lg">
-        {orders.map((order) => (
-          <article
-            key={order.id}
-            className="bg-surface-container-lowest rounded-2xl p-space-lg shadow-md flex flex-col justify-between gap-space-md border border-surface-container-high"
-          >
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="font-headline-md text-headline-md text-primary font-bold">
-                  Đơn #HD-{order.id}
-                </span>
-                <span className="px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm font-bold">
-                  {order.status}
-                </span>
-              </div>
-              <p className="font-label-md text-on-surface mt-1">
-                {order.tableName || 'Mang đi'} • {order.customerName}
-              </p>
-              <span className="font-label-sm text-on-surface-variant block">
-                {when(order.createdAt)}
-              </span>
-
-              <div className="mt-space-md p-space-sm rounded-xl bg-surface-container-low space-y-1">
-                {(order.details || []).map((detail) => (
-                  <div
-                    key={detail.id}
-                    className="flex items-center justify-between font-body-sm text-on-surface"
-                  >
-                    <span>
-                      <strong>{detail.quantity}x</strong> {detail.name}
-                    </span>
-                    <span className="font-mono font-semibold">
-                      {vnd(detail.price * detail.quantity)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-space-sm border-t border-surface-container-high flex items-center justify-between">
-              <div>
-                <span className="font-label-sm text-on-surface-variant block">Cần thu:</span>
-                <span className="font-price-display-md text-price-display-md text-secondary font-black">
-                  {vnd(order.total)}
-                </span>
-              </div>
-              <Link
-                to={`/payments/${order.id}`}
-                className="px-space-lg py-space-sm rounded-xl bg-secondary text-on-secondary font-label-md font-bold shadow-md flex items-center gap-1.5 no-underline"
-              >
-                <span className="material-symbols-outlined text-[18px]">payments</span>
-                <span>Thanh toán</span>
-              </Link>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      {!orders.length && (
-        <div className="p-space-2xl rounded-2xl bg-surface-container-lowest shadow-sm text-center">
-          <span className="material-symbols-outlined text-[44px] text-secondary block mb-2">
-            task_alt
-          </span>
-          <h2 className="font-headline-sm text-primary font-bold">
-            Hiện không có hóa đơn nào chờ thanh toán
-          </h2>
-          <p className="font-body-sm text-on-surface-variant mt-1">
-            Khi bộ phận KDS bấm &ldquo;Xong toàn bộ&rdquo;, đơn hàng sẽ xuất hiện tại đây để thu tiền.
+          <OpsIcon name="payments" size={28} />
+          <h2 style={{ margin: '10px 0 4px', fontSize: 18 }}>{t('ops.payments.emptyTitle')}</h2>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--an-muted)' }}>
+            {t('ops.payments.emptySub')}
           </p>
+        </section>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
+            gap: 14
+          }}
+        >
+          {orders.map((ord) => (
+            <article key={ord.id} className="ops-panel" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <strong className="ops-mono" style={{ fontSize: 16 }}>
+                    #{ord.id}
+                  </strong>
+                  <span className="ops-badge ops-badge--caramel">{trData(ord.tableName)}</span>
+                </div>
+                <span className="ops-badge ops-badge--ok">{t(`ops.statuses.${ord.status}`)}</span>
+              </div>
+
+              <div style={{ fontSize: 12.5, color: 'var(--an-muted)', display: 'flex', justifyContent: 'space-between' }}>
+                <span>{trData(ord.customerName)}</span>
+                <span className="ops-mono">{clock(ord.createdAt)}</span>
+              </div>
+
+              <ul className="ops-kds-items" style={{ flex: 1 }}>
+                {(ord.details || []).slice(0, 4).map((line, i) => (
+                  <li key={line.id || i}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>
+                        <strong className="ops-mono">{line.quantity}×</strong> {trData(line.name)}
+                      </span>
+                      <span className="ops-mono">{money(line.price * line.quantity)}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 11.5, color: 'var(--an-muted)' }}>{t('ops.payments.amountDue')}</div>
+                  <strong className="ops-mono" style={{ fontSize: 20 }}>
+                    {money(ord.total)}
+                  </strong>
+                </div>
+
+                <Link to={`/payments/${ord.id}`} className="ops-btn ops-btn--espresso">
+                  <OpsIcon name="payments" size={15} />
+                  <span>{t('ops.payments.settleBtn')}</span>
+                </Link>
+              </div>
+            </article>
+          ))}
         </div>
       )}
     </div>

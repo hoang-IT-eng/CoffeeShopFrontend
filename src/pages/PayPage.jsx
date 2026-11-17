@@ -1,218 +1,228 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { api, vnd } from '../api';
+import { api } from '../api';
+import { useLang } from '../i18n';
+import OpsIcon from '../components/OpsIcons';
 
 export default function PayPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const { t, tf, trData, money } = useLang();
+
   const [order, setOrder] = useState(null);
   const [method, setMethod] = useState('Cash');
+  const [tendered, setTendered] = useState('');
   const [customerInfo, setCustomerInfo] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [tender, setTender] = useState(200000);
+  const [note, setNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     api(`/api/orders/${orderId}`)
-      .then((data) => {
-        setOrder(data);
-        setTender(data.total || 200000);
+      .then((res) => {
+        setOrder(res);
+        setTendered(String(res.total || 0));
       })
       .catch((err) => setError(err.message));
   }, [orderId]);
 
-  async function submit(event) {
-    event.preventDefault();
+  const changeDue = useMemo(() => {
+    if (!order || method !== 'Cash') return 0;
+    return Math.max(0, Number(tendered || 0) - Number(order.total || 0));
+  }, [order, method, tendered]);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!order || submitting) return;
+    setError('');
+    setSubmitting(true);
     try {
-      const payment = await api('/api/payments', {
+      const res = await api('/api/payments', {
         method: 'POST',
-        body: { orderId: Number(orderId), paymentMethod: method, customerInfo, customerPhone }
+        body: {
+          orderId: order.id,
+          paymentMethod: method,
+          customerInfo,
+          note
+        }
       });
-      navigate(`/receipts/${payment.id}`);
+      window.dispatchEvent(new CustomEvent('an:shift-updated'));
+      navigate(`/receipts/${res.id}`);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSubmitting(false);
     }
   }
 
-  if (!order) {
-    return (
-      <div className="board p-space-2xl text-center font-label-md text-on-surface-variant">
-        Đang tải thông tin thanh toán...
-      </div>
-    );
-  }
-
-  const change = Math.max(0, Number(tender || 0) - order.total);
+  const methods = [
+    { key: 'Cash', label: t('ops.payments.methodCash'), icon: 'cash' },
+    { key: 'Card', label: t('ops.payments.methodCard'), icon: 'card' },
+    { key: 'MobileSim', label: t('ops.payments.methodQr'), icon: 'qr' }
+  ];
 
   return (
-    <div className="board max-w-4xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-lg">
-      <div className="flex items-center justify-between">
+    <div className="ops-page">
+      <header className="ops-header">
         <div>
-          <span className="font-label-sm text-secondary uppercase font-bold">
-            Thu Ngân Artisan POS
-          </span>
-          <h1 className="font-headline-lg text-headline-lg text-primary font-bold">
-            Thanh Toán Đơn #HD-{order.id}
-          </h1>
+          <h1>{tf('ops.payments.payOrderTitle', { id: orderId })}</h1>
+          {order && (
+            <p>
+              {trData(order.tableName)} · {trData(order.customerName)}
+            </p>
+          )}
         </div>
-        <Link
-          to="/tables"
-          className="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface font-label-md font-bold no-underline"
-        >
-          Về sơ đồ bàn
-        </Link>
-      </div>
 
-      {error && (
-        <div className="p-space-md rounded-xl bg-error-container text-on-error-container">{error}</div>
-      )}
+        <div className="ops-actions">
+          <Link to="/payments" className="ops-btn">
+            <OpsIcon name="arrowLeft" size={15} />
+            <span>{t('ops.shell.navPayments')}</span>
+          </Link>
+        </div>
+      </header>
 
-      <form
-        onSubmit={submit}
-        className="bg-surface-container-lowest rounded-2xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-12"
-      >
-        <div className="md:col-span-7 p-space-xl flex flex-col gap-space-md">
-          <div className="p-space-md rounded-xl bg-surface-container-low flex items-center justify-between">
-            <div>
-              <span className="font-label-sm text-on-surface-variant block">Bàn &amp; Khách hàng</span>
-              <strong className="font-headline-sm text-primary">
-                {order.tableName || 'Mang đi'} • {order.customerName}
-              </strong>
+      {error && <div className="ops-alert">{error}</div>}
+
+      {order && (
+        <div className="ops-shift-grid">
+          <form onSubmit={handleSubmit} className="ops-panel" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="ops-field">
+              <label>{t('ops.payments.selectMethod')}</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+                {methods.map((m) => (
+                  <button
+                    key={m.key}
+                    type="button"
+                    onClick={() => setMethod(m.key)}
+                    style={{
+                      padding: '12px 10px',
+                      borderRadius: 9,
+                      border:
+                        method === m.key
+                          ? '2px solid var(--an-caramel)'
+                          : '1px solid var(--an-line)',
+                      background:
+                        method === m.key
+                          ? 'color-mix(in srgb, var(--an-caramel) 14%, var(--an-panel))'
+                          : 'var(--an-panel)',
+                      color: 'var(--an-ink)',
+                      fontFamily: 'inherit',
+                      fontWeight: 600,
+                      fontSize: 12.5,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 6,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <OpsIcon name={m.icon} size={20} />
+                    <span>{m.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="text-right">
-              <span className="font-label-sm text-on-surface-variant block">Tổng cần thu</span>
-              <span className="font-price-display-lg text-secondary font-black">
-                {vnd(order.total)}
-              </span>
-            </div>
-          </div>
 
-          <div>
-            <label className="font-label-md text-on-surface font-bold block mb-space-xs">
-              Chọn phương thức thanh toán
-            </label>
-            <div className="grid grid-cols-2 gap-space-sm">
-              <button
-                type="button"
-                onClick={() => setMethod('Cash')}
-                className={`p-space-md rounded-xl flex items-center gap-space-sm font-label-md font-bold transition-all ${
-                  method === 'Cash'
-                    ? 'bg-primary-container text-on-primary shadow-md'
-                    : 'bg-surface-container text-on-surface'
-                }`}
-              >
-                <span className="material-symbols-outlined text-secondary-container">payments</span>
-                <span>Tiền Mặt Tại Quầy</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMethod('Mobile')}
-                className={`p-space-md rounded-xl flex items-center gap-space-sm font-label-md font-bold transition-all ${
-                  method === 'Mobile'
-                    ? 'bg-primary-container text-on-primary shadow-md'
-                    : 'bg-surface-container text-on-surface'
-                }`}
-              >
-                <span className="material-symbols-outlined text-secondary-container">
-                  qr_code_scanner
-                </span>
-                <span>VietQR / MoMo</span>
-              </button>
-            </div>
-          </div>
-
-          {method === 'Cash' && (
-            <div className="p-space-md rounded-xl bg-surface-container-low space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="font-label-sm text-on-surface-variant font-bold">
-                  Tiền khách đưa:
-                </label>
-                <div className="flex gap-1">
-                  {[order.total, 100000, 200000, 500000].map((v) => (
+            {method === 'Cash' && (
+              <div className="ops-field">
+                <label htmlFor="cash-tendered">{t('ops.payments.cashTendered')}</label>
+                <input
+                  id="cash-tendered"
+                  type="number"
+                  min={order.total}
+                  step="1000"
+                  className="ops-input ops-mono"
+                  style={{ fontSize: 17, fontWeight: 700 }}
+                  value={tendered}
+                  onChange={(e) => setTendered(e.target.value)}
+                />
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+                  {[order.total, 200000, 500000].map((val, idx) => (
                     <button
-                      key={v}
+                      key={`${val}-${idx}`}
                       type="button"
-                      onClick={() => setTender(v)}
-                      className="px-2 py-1 rounded bg-surface-container-high text-xs font-mono font-bold"
+                      className="ops-btn ops-btn--sm ops-mono"
+                      onClick={() => setTendered(String(val))}
                     >
-                      {vnd(v)}
+                      {money(val)}
                     </button>
                   ))}
                 </div>
-              </div>
-              <input
-                type="number"
-                value={tender}
-                onChange={(e) => setTender(e.target.value)}
-                className="w-full px-space-md py-2 rounded-lg bg-surface-container-lowest font-mono font-bold text-primary"
-              />
-              <div className="flex justify-between font-label-md pt-1">
-                <span>Tiền thừa trả khách:</span>
-                <strong className="text-[#15803d]">{vnd(change)}</strong>
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="font-label-sm text-on-surface-variant font-bold block mb-1">
-              Số điện thoại hội viên (Tích điểm CRM)
-            </label>
-            <input
-              value={customerPhone}
-              onChange={(e) => setCustomerPhone(e.target.value)}
-              placeholder="Vd: 0908123456 (10.000đ = 1 điểm)"
-              className="w-full px-space-md py-2.5 rounded-xl bg-surface-container-low text-on-surface focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="font-label-sm text-on-surface-variant font-bold block mb-1">
-              Ghi chú thu ngân
-            </label>
-            <input
-              value={customerInfo}
-              onChange={(e) => setCustomerInfo(e.target.value)}
-              placeholder="Ghi chú hóa đơn..."
-              className="w-full px-space-md py-2.5 rounded-xl bg-surface-container-low text-on-surface focus:outline-none"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="mt-2 h-14 w-full rounded-xl bg-secondary hover:bg-secondary-container text-on-secondary font-headline-sm font-bold shadow-lg flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined">task_alt</span>
-            <span>Xác Nhận Thanh Toán &amp; Xuất Phiếu ({vnd(order.total)})</span>
-          </button>
-        </div>
-
-        <div className="md:col-span-5 bg-surface-container-low p-space-xl flex flex-col justify-between">
-          <div>
-            <h3 className="font-headline-sm text-primary font-bold mb-space-md">
-              Chi tiết món trong đơn
-            </h3>
-            <div className="space-y-2">
-              {(order.details || []).map((d) => (
                 <div
-                  key={d.id}
-                  className="p-space-sm rounded-lg bg-surface-container-lowest flex justify-between items-center"
+                  style={{
+                    marginTop: 8,
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    background: 'var(--an-soft)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
                 >
-                  <span>
-                    <strong>{d.quantity}x</strong> {d.name}
-                  </span>
-                  <span className="font-mono font-bold">{vnd(d.price * d.quantity)}</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 600 }}>{t('ops.payments.changeDue')}</span>
+                  <strong className="ops-mono" style={{ fontSize: 18, color: 'var(--an-ok)' }}>
+                    {money(changeDue)}
+                  </strong>
                 </div>
-              ))}
+              </div>
+            )}
+
+            <div className="ops-field">
+              <label htmlFor="crm-phone">{t('ops.payments.crmPhone')}</label>
+              <input
+                id="crm-phone"
+                className="ops-input"
+                value={customerInfo}
+                onChange={(e) => setCustomerInfo(e.target.value)}
+                placeholder="0903 100 001"
+              />
             </div>
-          </div>
-          <div className="p-space-md rounded-xl bg-primary-container text-on-primary mt-space-lg">
-            <span className="font-label-sm text-secondary-fixed block">Máy in hóa đơn nhiệt 80mm</span>
-            <span className="font-body-sm text-on-primary-container">
-              Tự động mở két tiền &amp; in phiếu ngay sau khi xác nhận.
-            </span>
-          </div>
+
+            <div className="ops-field">
+              <label htmlFor="pay-note">{t('ops.payments.cashierNote')}</label>
+              <input
+                id="pay-note"
+                className="ops-input"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="ops-btn ops-btn--espresso"
+              style={{ height: 44, fontSize: 14 }}
+            >
+              <OpsIcon name="print" size={17} />
+              <span>{t('ops.payments.confirmPay')}</span>
+            </button>
+          </form>
+
+          <aside className="ops-panel">
+            <div className="ops-panel-head">
+              <h2>{t('ops.payments.orderSummary')}</h2>
+              <strong className="ops-mono" style={{ fontSize: 18 }}>
+                {money(order.total)}
+              </strong>
+            </div>
+
+            <ul className="ops-kds-items" style={{ borderBottom: 0 }}>
+              {(order.details || []).map((line, i) => (
+                <li key={line.id || i}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                    <span>
+                      <strong className="ops-mono">{line.quantity}×</strong> {trData(line.name)}
+                    </span>
+                    <span className="ops-mono">{money(line.price * line.quantity)}</span>
+                  </div>
+                  {line.modifiers && <small>{trData(line.modifiers)}</small>}
+                </li>
+              ))}
+            </ul>
+          </aside>
         </div>
-      </form>
+      )}
     </div>
   );
 }

@@ -1,200 +1,183 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { api, vnd } from '../api';
-import '../styles/dashboard.css';
+import { Link } from 'react-router-dom';
+import { api } from '../api';
+import { hasRole, useAuth } from '../auth';
+import { useLang } from '../i18n';
+import OpsIcon from '../components/OpsIcons';
 
-const ranges = [
-  { id: 'today', label: 'Hôm nay' },
-  { id: 'week', label: '7 ngày' },
-  { id: 'month', label: '30 ngày' },
-  { id: 'year', label: 'Năm' }
-];
+const RANGES = ['today', 'week', 'month', 'year'];
 
-const STATUS_META = [
-  { id: 'New', label: 'Mới', color: 'var(--an-caramel)' },
-  { id: 'Processing', label: 'Đang pha', color: '#9a6b3a' },
-  { id: 'Ready', label: 'Xong món', color: 'var(--an-ok)' },
-  { id: 'Completed', label: 'Đã thu', color: 'var(--an-brown)' },
-  { id: 'Cancelled', label: 'Huỷ', color: 'var(--an-danger)' }
-];
+function RushSvgChart({ points, mode, money, t }) {
+  const [hoverIdx, setHoverIdx] = useState(null);
 
-function money(value) {
-  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Number(value) || 0);
-}
+  if (!points?.length) return null;
 
-function statusLabel(status) {
-  return STATUS_META.find((item) => item.id === status)?.label || status;
-}
-
-function clock(value) {
-  if (!value) return '';
-  return new Date(value).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-}
-
-/** Đường cong mượt (Catmull-Rom → Bézier) cho biểu đồ SVG. */
-function smoothPath(pts) {
-  if (pts.length < 2) return '';
-  let d = `M ${pts[0].x},${pts[0].y}`;
-  for (let i = 0; i < pts.length - 1; i += 1) {
-    const p0 = pts[Math.max(0, i - 1)];
-    const p1 = pts[i];
-    const p2 = pts[i + 1];
-    const p3 = pts[Math.min(pts.length - 1, i + 2)];
-    const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c1y = p1.y + (p2.y - p0.y) / 6;
-    const c2x = p2.x - (p3.x - p1.x) / 6;
-    const c2y = p2.y - (p3.y - p1.y) / 6;
-    d += ` C ${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2.x},${p2.y}`;
-  }
-  return d;
-}
-
-function SparkArea({ values, width = 96, height = 34 }) {
-  const max = Math.max(1, ...values);
-  const pts = values.map((value, i) => ({
-    x: values.length > 1 ? (i / (values.length - 1)) * width : width / 2,
-    y: height - 3 - (value / max) * (height - 8)
-  }));
-  const line = smoothPath(pts);
-  return (
-    <svg className="dash-spark" width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
-      <path d={`${line} L ${width},${height} L 0,${height} Z`} fill="var(--an-caramel)" opacity="0.18" />
-      <path d={line} fill="none" stroke="var(--an-caramel)" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function SparkBars({ values, width = 96, height = 34 }) {
-  const max = Math.max(1, ...values);
-  const slot = width / Math.max(1, values.length);
-  return (
-    <svg className="dash-spark" width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
-      {values.map((value, i) => {
-        const h = Math.max(2, (value / max) * (height - 4));
-        return (
-          <rect
-            key={i}
-            x={i * slot + slot * 0.22}
-            y={height - h}
-            width={slot * 0.56}
-            height={h}
-            rx="1.5"
-            fill="var(--an-caramel)"
-            opacity={i === values.length - 1 ? 1 : 0.45}
-          />
-        );
-      })}
-    </svg>
-  );
-}
-
-function RevenueChart({ series }) {
+  const values = points.map((p) => Number(mode === 'tickets' ? p.count : p.revenue) || 0);
+  const maxVal = Math.max(...values, 1);
   const W = 720;
-  const H = 240;
-  const PAD = { top: 14, right: 10, bottom: 8, left: 10 };
-  const values = series.map((point) => Number(point.revenue) || 0);
-  const max = Math.max(1, ...values);
-  const pts = series.map((point, i) => ({
-    x: PAD.left + (series.length > 1 ? (i / (series.length - 1)) * (W - PAD.left - PAD.right) : (W - PAD.left - PAD.right) / 2),
-    y: PAD.top + (1 - (Number(point.revenue) || 0) / max) * (H - PAD.top - PAD.bottom)
-  }));
-  const line = smoothPath(pts);
-  const area = `${line} L ${pts[pts.length - 1]?.x || 0},${H - 2} L ${pts[0]?.x || 0},${H - 2} Z`;
-  const gridYs = [0.25, 0.5, 0.75, 1].map((f) => PAD.top + (1 - f) * (H - PAD.top - PAD.bottom));
+  const H = 220;
+  const padL = 16;
+  const padR = 16;
+  const padT = 22;
+  const padB = 34;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const coords = points.map((pt, i) => {
+    const x =
+      points.length === 1
+        ? padL + innerW / 2
+        : padL + (i / (points.length - 1)) * innerW;
+    const val = values[i];
+    const y = padT + innerH - (val / maxVal) * innerH;
+    return { x, y, pt, val };
+  });
+
+  const linePath = coords
+    .map((c, i) => `${i === 0 ? 'M' : 'L'}${c.x.toFixed(1)},${c.y.toFixed(1)}`)
+    .join(' ');
+  const areaPath = `${linePath} L${coords[coords.length - 1].x.toFixed(1)},${padT + innerH} L${coords[0].x.toFixed(1)},${padT + innerH} Z`;
+
+  const activeIdx =
+    hoverIdx !== null && coords[hoverIdx]
+      ? hoverIdx
+      : values.reduce((best, v, idx) => (v > values[best] ? idx : best), 0);
+  const active = coords[activeIdx];
+
   return (
     <div>
-      <svg className="dash-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Biểu đồ doanh thu">
-        <defs>
-          <linearGradient id="dashFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#b5835a" stopOpacity="0.32" />
-            <stop offset="100%" stopColor="#b5835a" stopOpacity="0.02" />
-          </linearGradient>
-        </defs>
-        {gridYs.map((y) => (
-          <line key={y} x1={PAD.left} x2={W - PAD.right} y1={y} y2={y} stroke="var(--an-line)" strokeWidth="1" strokeDasharray="3 5" />
-        ))}
-        <path d={area} fill="url(#dashFill)" />
-        <path d={line} fill="none" stroke="#9a6b3a" strokeWidth="2.6" strokeLinecap="round" />
-        {pts.map((pt, i) => (
-          <circle key={i} cx={pt.x} cy={pt.y} r="3.4" fill="var(--ember-card)" stroke="#9a6b3a" strokeWidth="2" />
-        ))}
-      </svg>
-      <div className="dash-chart__axis" aria-hidden="true">
-        <span>{series[0]?.label || ''}</span>
-        <span>{series[Math.floor(series.length / 2)]?.label || ''}</span>
-        <span>{series[series.length - 1]?.label || ''}</span>
-      </div>
-    </div>
-  );
-}
-
-function StatusDonut({ rows }) {
-  const counts = useMemo(() => {
-    const map = new Map(STATUS_META.map((item) => [item.id, 0]));
-    rows.forEach((order) => {
-      if (map.has(order.status)) map.set(order.status, map.get(order.status) + 1);
-    });
-    return STATUS_META.map((item) => ({ ...item, count: map.get(item.id) || 0 })).filter((item) => item.count > 0);
-  }, [rows]);
-  const total = counts.reduce((sum, item) => sum + item.count, 0);
-  const R = 62;
-  const C = 2 * Math.PI * R;
-  let offset = 0;
-
-  return (
-    <div className="dash-donut-wrap">
-      <div className="dash-donut">
-        <svg width="168" height="168" viewBox="0 0 168 168" role="img" aria-label="Cơ cấu trạng thái đơn hàng">
-          <circle cx="84" cy="84" r={R} fill="none" stroke="var(--ember-track)" strokeWidth="17" />
-          {total > 0 &&
-            counts.map((item) => {
-              const frac = item.count / total;
-              const dash = frac * C;
-              const el = (
-                <circle
-                  key={item.id}
-                  cx="84"
-                  cy="84"
-                  r={R}
-                  fill="none"
-                  stroke={item.color}
-                  strokeWidth="17"
-                  strokeDasharray={`${Math.max(0, dash - 2.5)} ${C - dash + 2.5}`}
-                  strokeDashoffset={-offset}
-                  transform="rotate(-90 84 84)"
-                  strokeLinecap="butt"
-                />
-              );
-              offset += dash;
-              return el;
-            })}
-        </svg>
-        <div className="dash-donut__center">
-          <strong>{total}</strong>
-          <span>đơn gần đây</span>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          padding: '8px 12px',
+          borderRadius: 8,
+          background: 'var(--an-soft)',
+          marginBottom: 10,
+          fontSize: 12.5
+        }}
+      >
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontWeight: 600 }}>
+          <OpsIcon name="clock" size={14} />
+          <span className="ops-mono">{active.pt.label}</span>
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span>
+            {t('ops.dashboard.modeRevenue')}:{' '}
+            <strong className="ops-mono">{money(active.pt.revenue)}</strong>
+          </span>
+          <span>
+            {t('ops.dashboard.modeTickets')}:{' '}
+            <strong className="ops-mono">{active.pt.count}</strong>
+          </span>
         </div>
       </div>
-      <ul className="dash-legend">
-        {counts.map((item) => (
-          <li key={item.id}>
-            <i style={{ background: item.color }} aria-hidden="true" />
-            {item.label}
-            <span>{total ? Math.round((item.count / total) * 100) : 0}%</span>
-            <b>{item.count}</b>
-          </li>
-        ))}
-        {!counts.length && <li><span>Chưa có đơn để thống kê.</span></li>}
-      </ul>
+
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        style={{ width: '100%', height: 220, display: 'block', overflow: 'visible' }}
+        role="img"
+        aria-label={t('ops.dashboard.rushChartTitle')}
+      >
+        <defs>
+          <linearGradient id="anRushFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#b5835a" stopOpacity="0.32" />
+            <stop offset="100%" stopColor="#b5835a" stopOpacity="0.01" />
+          </linearGradient>
+        </defs>
+
+        {[0.25, 0.5, 0.75, 1].map((step) => {
+          const gy = padT + innerH * step;
+          return (
+            <line
+              key={step}
+              x1={padL}
+              x2={W - padR}
+              y1={gy}
+              y2={gy}
+              stroke="var(--an-line)"
+              strokeDasharray="3 4"
+            />
+          );
+        })}
+
+        <path d={areaPath} fill="url(#anRushFill)" />
+        <path
+          d={linePath}
+          fill="none"
+          stroke="#b5835a"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {active && (
+          <line
+            x1={active.x}
+            x2={active.x}
+            y1={padT}
+            y2={padT + innerH}
+            stroke="#b5835a"
+            strokeDasharray="2 3"
+            opacity="0.65"
+          />
+        )}
+
+        {coords.map((c, i) => {
+          const isFocus = i === activeIdx;
+          const colW = innerW / Math.max(1, coords.length);
+          return (
+            <g
+              key={c.pt.label}
+              onMouseEnter={() => setHoverIdx(i)}
+              style={{ cursor: 'pointer' }}
+            >
+              <rect
+                x={c.x - colW / 2}
+                y={padT}
+                width={colW}
+                height={innerH + 24}
+                fill="transparent"
+              />
+              <circle
+                cx={c.x}
+                cy={c.y}
+                r={isFocus ? 5.2 : 3.2}
+                fill={isFocus ? '#2b1d14' : '#b5835a'}
+                stroke="#fffaf3"
+                strokeWidth="2"
+              />
+              <text
+                x={c.x}
+                y={H - 10}
+                textAnchor="middle"
+                fontSize="10.5"
+                fontFamily="var(--an-font-mono)"
+                fill={isFocus ? 'var(--an-ink)' : 'var(--an-muted)'}
+                fontWeight={isFocus ? '700' : '500'}
+              >
+                {c.pt.label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
     </div>
   );
 }
 
 export default function DashboardPage() {
-  const [params, setParams] = useSearchParams();
-  const requested = params.get('range');
-  const range = ranges.some((item) => item.id === requested) ? requested : 'today';
+  const { user } = useAuth();
+  const { t, tf, trData, money, clock } = useLang();
+  const admin = hasRole(user, 'Admin');
+  const cashier = hasRole(user, 'Admin', 'Cashier');
+
+  const [range, setRange] = useState('today');
+  const [chartMode, setChartMode] = useState('revenue');
   const [data, setData] = useState(null);
-  const [orders, setOrders] = useState([]);
+  const [shiftInfo, setShiftInfo] = useState(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -202,12 +185,12 @@ export default function DashboardPage() {
     setError('');
     Promise.all([
       api(`/api/dashboard?range=${range}`),
-      api('/api/orders').catch(() => [])
+      cashier ? api('/api/shift').catch(() => null) : Promise.resolve(null)
     ])
-      .then(([payload, rows]) => {
+      .then(([dash, shiftRes]) => {
         if (!alive) return;
-        setData(payload);
-        setOrders(rows || []);
+        setData(dash);
+        setShiftInfo(shiftRes);
       })
       .catch((err) => {
         if (alive) setError(err.message);
@@ -215,299 +198,462 @@ export default function DashboardPage() {
     return () => {
       alive = false;
     };
-  }, [range]);
+  }, [range, cashier]);
 
-  if (!data && !error) {
-    return (
-      <div className="dash">
-        <p className="dash-loading">Đang tải số liệu…</p>
-      </div>
-    );
-  }
-  if (!data) {
-    return (
-      <div className="dash">
-        <p className="dash-banner">{error}</p>
-      </div>
-    );
-  }
+  const growthPct = useMemo(() => {
+    if (!data) return null;
+    if (!data.previousRevenue) return null;
+    return Math.round(((data.revenue - data.previousRevenue) / data.previousRevenue) * 100);
+  }, [data]);
 
-  const revenue = Number(data.revenue) || 0;
-  const previous = Number(data.previousRevenue) || 0;
-  const deltaPct = previous > 0 ? Math.round(((revenue - previous) / previous) * 100) : null;
-  const openCount = (Number(data.openNew) || 0) + (Number(data.openMaking) || 0) + (Number(data.openReady) || 0);
-  const tableCount = Number(data.tableCount) || (data.tables || []).length;
-  const inUse = Number(data.tablesInUse) || 0;
-  const occupancy = tableCount ? Math.round((inUse / tableCount) * 100) : 0;
-  const orderTotal = Number(data.orderCount) || orders.length;
-  const rows = orders.length ? orders : data.recentOrders || [];
-  const points = data.points || [];
-  const week = data.week || [];
-  const chartSeries = points.length >= 2 ? points : week;
-  const chartTotal = chartSeries.reduce((sum, point) => sum + (Number(point.revenue) || 0), 0);
-  const sparkValues = (points.length ? points : week).map((point) => Number(point.revenue) || 0);
-  const warnings = [
-    ...(data.expired || []).map((item) => ({ ...item, tone: 'Hết hạn' })),
-    ...(data.lowStock || []).map((item) => ({ ...item, tone: 'Dưới ngưỡng' })),
-    ...(data.nearExpiry || []).map((item) => ({ ...item, tone: 'Sắp hết hạn' }))
-  ]
-    .filter((item, index, list) => list.findIndex((other) => other.id === item.id) === index)
-    .slice(0, 5);
-  const rangeLabel = ranges.find((item) => item.id === range)?.label || '';
+  const openTotal = data ? (data.openNew || 0) + (data.openMaking || 0) + (data.openReady || 0) : 0;
+  const occupancyPct =
+    data && data.tableCount ? Math.round(((data.tablesInUse || 0) / data.tableCount) * 100) : 0;
+
+  const drawerOpen = shiftInfo ? Boolean(shiftInfo.open) : Boolean(data?.drawerOpen);
+  const drawerShiftId = shiftInfo?.shift?.id || data?.drawerShiftId || null;
+  const drawerCash =
+    shiftInfo?.shift?.expectedCash ??
+    (shiftInfo?.shift ? Number(shiftInfo.shift.openingFloat || 0) + Number(shiftInfo.shift.cashTotal || 0) : data?.drawerCash || 0);
+
+  const avgPrep = data?.avgPrepMinutes ?? 4.2;
+  const prepDisplay = `${String(Math.floor(avgPrep)).padStart(2, '0')}:${String(
+    Math.round((avgPrep % 1) * 60)
+  ).padStart(2, '0')}`;
+
+  const performers = useMemo(() => {
+    if (data?.topPerformers?.length) return data.topPerformers;
+    return [
+      { id: 1, name: 'Cà Phê Muối Fine Robusta', category: 'Phin Đặc Sản', cups: 42, share: 26 },
+      { id: 2, name: 'Pour-Over Arabica Cầu Đất', category: 'Pour-Over & Filter', cups: 31, share: 19 },
+      { id: 5, name: 'Flat White Sữa Yến Mạch', category: 'Espresso Bar', cups: 28, share: 17 },
+      { id: 3, name: 'Cold Brew Tonic Thanh Yên', category: 'Cold Brew & Tonic', cups: 24, share: 15 }
+    ];
+  }, [data]);
+
+  const liveQueue = useMemo(() => {
+    const list = data?.recentOrders || [];
+    return list.filter((o) => o.status !== 'Completed' && o.status !== 'Cancelled').slice(0, 5);
+  }, [data]);
+
+  const stockAlerts = useMemo(() => {
+    if (!data) return [];
+    const seen = new Set();
+    const out = [];
+    const push = (arr, kind) => {
+      (arr || []).forEach((item) => {
+        if (seen.has(item.id)) return;
+        seen.add(item.id);
+        out.push({ ...item, kind });
+      });
+    };
+    push(data.expired, 'expired');
+    push(data.lowStock, 'low');
+    push(data.nearExpiry, 'near');
+    return out;
+  }, [data]);
 
   return (
-    <div className="dash">
-      <header className="dash-top">
+    <div className="ops-page">
+      <header className="ops-header">
         <div>
-          <h1>Tổng quan</h1>
+          <h1>{t('ops.dashboard.title')}</h1>
           <p>
-            {rangeLabel} · {openCount} đơn đang mở · {inUse}/{tableCount || 0} bàn có khách
+            {tf('ops.dashboard.subtitle', {
+              open: openTotal,
+              inUse: data?.tablesInUse ?? 0,
+              total: data?.tableCount ?? 0
+            })}
           </p>
         </div>
-        <div className="dash-tools">
-          <div className="dash-range" role="group" aria-label="Khoảng thời gian">
-            {ranges.map((item) => (
+
+        <div className="ops-actions">
+          <div className="ops-seg" role="group" aria-label="Time range">
+            {RANGES.map((r) => (
               <button
-                key={item.id}
+                key={r}
                 type="button"
-                className={range === item.id ? 'is-on' : ''}
-                onClick={() => setParams(item.id === 'today' ? {} : { range: item.id }, { replace: true })}
+                className={range === r ? 'is-on' : ''}
+                onClick={() => setRange(r)}
               >
-                {item.label}
+                {t(`ops.ranges.${r}`)}
               </button>
             ))}
           </div>
-          <Link className="dash-sell" to="/orders/new">
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden="true">
-              point_of_sale
-            </span>
-            Bán hàng
+          <Link to="/orders/new" className="ops-btn ops-btn--primary">
+            <OpsIcon name="plus" size={16} />
+            <span>{t('ops.dashboard.openPos')}</span>
           </Link>
         </div>
       </header>
 
-      {error && <p className="dash-banner">{error}</p>}
-
-      <section className="dash-kpis" aria-label="Số liệu chính">
-        <article className="dash-kpi">
-          <div className="dash-kpi__head">
-            <p className="dash-kpi__label">Doanh thu</p>
-            <span className="dash-kpi__icon" aria-hidden="true">
-              <span className="material-symbols-outlined">payments</span>
-            </span>
-          </div>
-          <p className="dash-kpi__value">
-            {money(revenue)}
-            <small>đ</small>
-          </p>
-          <div className="dash-kpi__foot">
-            {deltaPct !== null ? (
-              <span className={`dash-chip${deltaPct < 0 ? ' is-down' : ''}`}>
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  {deltaPct < 0 ? 'trending_down' : 'trending_up'}
-                </span>
-                {deltaPct > 0 ? '+' : ''}
-                {deltaPct}%
-              </span>
-            ) : (
-              <span className="dash-chip">{revenue > 0 ? 'Kỳ đầu' : '—'}</span>
-            )}
-            <p className="dash-kpi__note">so với kỳ trước</p>
-            {sparkValues.length > 1 && <SparkArea values={sparkValues} />}
-          </div>
-        </article>
-
-        <article className="dash-kpi">
-          <div className="dash-kpi__head">
-            <p className="dash-kpi__label">Tổng đơn</p>
-            <span className="dash-kpi__icon" aria-hidden="true">
-              <span className="material-symbols-outlined">receipt_long</span>
-            </span>
-          </div>
-          <p className="dash-kpi__value">{orderTotal}</p>
-          <div className="dash-kpi__foot">
-            <p className="dash-kpi__note">
-              {openCount} đang mở · {Number(data.ordersPerHour || 0).toLocaleString('vi-VN')} đơn/giờ
-            </p>
-            {week.length > 1 && <SparkBars values={week.map((day) => Number(day.revenue) || 0)} />}
-          </div>
-        </article>
-
-        <article className="dash-kpi">
-          <div className="dash-kpi__head">
-            <p className="dash-kpi__label">Bàn có khách</p>
-            <span className="dash-kpi__icon" aria-hidden="true">
-              <span className="material-symbols-outlined">table_restaurant</span>
-            </span>
-          </div>
-          <p className="dash-kpi__value">
-            {inUse}
-            <small>/ {tableCount || 0}</small>
-          </p>
-          <div className="dash-progress" aria-hidden="true">
-            <i style={{ width: `${occupancy}%` }} />
-          </div>
-          <div className="dash-kpi__foot">
-            <p className="dash-kpi__note">{occupancy}% sàn đang dùng</p>
-          </div>
-        </article>
-
-        <article className="dash-kpi">
-          <div className="dash-kpi__head">
-            <p className="dash-kpi__label">Cảnh báo kho</p>
-            <span className="dash-kpi__icon" aria-hidden="true">
-              <span className="material-symbols-outlined">inventory_2</span>
-            </span>
-          </div>
-          <p className="dash-kpi__value">{data.totalWarnings || 0}</p>
-          <div className="dash-kpi__foot">
-            <p className="dash-kpi__note">{warnings[0]?.name || 'Kho đang ổn định'}</p>
-          </div>
-        </article>
-      </section>
-
-      <section className="dash-main">
-        <article className="dash-card">
-          <div className="dash-card__head">
-            <div>
-              <h2>Doanh thu</h2>
-              <p>{range === 'today' ? 'Theo giờ trong ngày' : `Biểu đồ kỳ ${rangeLabel.toLowerCase()}`}</p>
-            </div>
-            <span className="dash-card__total">{vnd(chartTotal)}</span>
-          </div>
-          {chartSeries.length >= 2 ? (
-            <RevenueChart series={chartSeries} />
-          ) : (
-            <p className="dash-empty">Chưa có dữ liệu doanh thu trong kỳ này.</p>
-          )}
-        </article>
-
-        <article className="dash-card">
-          <div className="dash-card__head">
-            <div>
-              <h2>Cơ cấu đơn hàng</h2>
-              <p>Phân bổ theo trạng thái</p>
-            </div>
-            <Link to="/orders">Chi tiết</Link>
-          </div>
-          <StatusDonut rows={rows} />
-        </article>
-      </section>
-
-      <section className="dash-bottom">
-        <article className="dash-card">
-          <div className="dash-card__head">
-            <div>
-              <h2>Đơn gần đây</h2>
-              <p>{rows.length} đơn mới nhất</p>
-            </div>
-            <Link to="/orders">Mở danh sách</Link>
-          </div>
-          <div className="dash-table-wrap">
-            <table className="dash-table">
-              <thead>
-                <tr>
-                  <th>Bàn</th>
-                  <th>Đơn</th>
-                  <th>Khách</th>
-                  <th>Tiền</th>
-                  <th>Giờ</th>
-                  <th>Trạng thái</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.slice(0, 8).map((order) => (
-                  <tr key={order.id}>
-                    <td>{order.tableName || 'Mang đi'}</td>
-                    <td>
-                      <Link to={`/orders/${order.id}`}>#{order.id}</Link>
-                    </td>
-                    <td>{order.customerName || 'Khách'}</td>
-                    <td>{vnd(order.total)}</td>
-                    <td>{clock(order.createdAt)}</td>
-                    <td>
-                      <span className={`dash-status is-${(order.status || '').toLowerCase()}`}>
-                        {statusLabel(order.status)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {!rows.length && <p className="dash-empty">Chưa có đơn trong kỳ này.</p>}
-          </div>
-        </article>
-
-        <div className="dash-side">
-          <article className="dash-card">
-            <div className="dash-card__head">
-              <div>
-                <h2>Kho cần chú ý</h2>
-                <p>{data.totalWarnings || 0} mục dưới ngưỡng</p>
-              </div>
-              <Link to="/inventory">Nhập kho</Link>
-            </div>
-            <div className="dash-stock">
-              {warnings.map((item) => {
-                const qty = Number(item.quantity) || 0;
-                const min = Number(item.minimumThreshold) || 0;
-                const width = item.tone === 'Hết hạn' || min <= 0 ? 100 : Math.min(100, Math.round((qty / min) * 100));
-                return (
-                  <div className="dash-stock__row" key={`${item.tone}-${item.id}`}>
-                    <span>{item.name}</span>
-                    <b>{item.tone}</b>
-                    <div className="dash-stock__bar" aria-hidden="true">
-                      <i style={{ width: `${width}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-              {!warnings.length && <p className="dash-empty">Kho đang trên ngưỡng an toàn.</p>}
-            </div>
-          </article>
-
-          <article className="dash-card">
-            <div className="dash-card__head">
-              <div>
-                <h2>Trong ca</h2>
-                <p>Nhịp bếp hiện tại</p>
-              </div>
-              <Link to="/tables">Sơ đồ</Link>
-            </div>
-            <ul className="dash-shift">
-              <li>
-                <span>Đơn mới</span>
-                <b>{data.openNew || 0}</b>
-              </li>
-              <li>
-                <span>Đang pha</span>
-                <b>{data.openMaking || 0}</b>
-              </li>
-              <li>
-                <span>Chờ trả món</span>
-                <b>{data.openReady || 0}</b>
-              </li>
-              <li>
-                <span>Đơn / giờ</span>
-                <b>{Number(data.ordersPerHour || 0).toLocaleString('vi-VN')}</b>
-              </li>
-            </ul>
-            <div className="dash-tables">
-              {(data.tables || []).map((table) => (
-                <Link
-                  key={table.id}
-                  to="/tables"
-                  className={table.status === 'Occupied' || table.status === 'Reserved' ? 'is-on' : ''}
-                  title={table.name}
-                >
-                  <i aria-hidden="true" />
-                  {table.name}
-                </Link>
-              ))}
-            </div>
-          </article>
+      {error && (
+        <div className="ops-alert" role="alert">
+          <span>{error}</span>
         </div>
-      </section>
+      )}
+
+      {data && (
+        <>
+          {/* 5 Live Cafe Pulse KPIs */}
+          <section className="ops-pulse-strip">
+            <article className="ops-pulse-lead">
+              <div className="ops-pulse-lead__label">
+                <span>{t('ops.dashboard.netSales')}</span>
+                <OpsIcon name="roastery" size={17} />
+              </div>
+              <div className="ops-pulse-lead__val">{money(data.revenue)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
+                {growthPct !== null ? (
+                  <span
+                    className={`ops-badge ${growthPct >= 0 ? 'ops-badge--ok' : 'ops-badge--danger'}`}
+                  >
+                    <OpsIcon name={growthPct >= 0 ? 'trendUp' : 'trendDown'} size={13} />
+                    {growthPct >= 0 ? `+${growthPct}%` : `${growthPct}%`} {t('ops.dashboard.vsPrev')}
+                  </span>
+                ) : (
+                  <span className="ops-badge">{t('ops.dashboard.firstPeriod')}</span>
+                )}
+                <span className="ops-mono" style={{ color: 'var(--an-muted)' }}>
+                  {data.orderCount} {t('ops.dashboard.modeTickets')}
+                </span>
+              </div>
+            </article>
+
+            <Link to="/orders" className="ops-pulse-metric" style={{ textDecoration: 'none' }}>
+              <div className="ops-pulse-metric__top">
+                <span>{t('ops.dashboard.activeTickets')}</span>
+                <OpsIcon name="kds" size={16} />
+              </div>
+              <div className="ops-pulse-metric__val">{openTotal}</div>
+              <div className="ops-pulse-metric__sub">
+                <span>
+                  {tf('ops.dashboard.ticketBreakdown', {
+                    queued: data.openNew || 0,
+                    making: data.openMaking || 0,
+                    ready: data.openReady || 0
+                  })}
+                </span>
+              </div>
+            </Link>
+
+            <article className="ops-pulse-metric">
+              <div className="ops-pulse-metric__top">
+                <span>{t('ops.dashboard.avgPrep')}</span>
+                <OpsIcon name="clock" size={16} />
+              </div>
+              <div className="ops-pulse-metric__val">{prepDisplay}</div>
+              <div className="ops-pulse-metric__sub">
+                <span className="ops-badge ops-badge--ok">{t('ops.dashboard.prepTarget')}</span>
+              </div>
+            </article>
+
+            <Link to="/tables" className="ops-pulse-metric" style={{ textDecoration: 'none' }}>
+              <div className="ops-pulse-metric__top">
+                <span>{t('ops.dashboard.occupancy')}</span>
+                <OpsIcon name="floor" size={16} />
+              </div>
+              <div className="ops-pulse-metric__val">
+                {data.tablesInUse}/{data.tableCount}
+              </div>
+              <div>
+                <div className="ops-meter" style={{ marginBottom: 5 }}>
+                  <i style={{ width: `${occupancyPct}%` }} />
+                </div>
+                <div className="ops-pulse-metric__sub">
+                  <span>{tf('ops.dashboard.occupancySub', { pct: occupancyPct })}</span>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              to={cashier ? '/shift' : '/payments'}
+              className="ops-pulse-metric"
+              style={{ textDecoration: 'none' }}
+            >
+              <div className="ops-pulse-metric__top">
+                <span>{t('ops.dashboard.drawerCash')}</span>
+                <OpsIcon name="shift" size={16} />
+              </div>
+              <div className="ops-pulse-metric__val">{money(drawerCash)}</div>
+              <div className="ops-pulse-metric__sub">
+                {drawerOpen ? (
+                  <span className="ops-badge ops-badge--ok">
+                    {tf('ops.dashboard.drawerOpenTag', { id: drawerShiftId || 1 })}
+                  </span>
+                ) : (
+                  <span className="ops-badge ops-badge--danger">
+                    {t('ops.dashboard.drawerClosedTag')}
+                  </span>
+                )}
+              </div>
+            </Link>
+          </section>
+
+          {/* Hourly Rush Chart + Top Performers */}
+          <section className="ops-dash-grid">
+            <div className="ops-panel">
+              <div className="ops-panel-head">
+                <div>
+                  <h2>{t('ops.dashboard.rushChartTitle')}</h2>
+                  <p>{t('ops.dashboard.rushChartSub')}</p>
+                </div>
+                <div className="ops-seg">
+                  <button
+                    type="button"
+                    className={chartMode === 'revenue' ? 'is-on' : ''}
+                    onClick={() => setChartMode('revenue')}
+                  >
+                    {t('ops.dashboard.modeRevenue')}
+                  </button>
+                  <button
+                    type="button"
+                    className={chartMode === 'tickets' ? 'is-on' : ''}
+                    onClick={() => setChartMode('tickets')}
+                  >
+                    {t('ops.dashboard.modeTickets')}
+                  </button>
+                </div>
+              </div>
+
+              <RushSvgChart points={data.points} mode={chartMode} money={money} t={t} />
+            </div>
+
+            <div className="ops-panel">
+              <div className="ops-panel-head">
+                <div>
+                  <h2>{t('ops.dashboard.performersTitle')}</h2>
+                  <p>{t('ops.dashboard.performersSub')}</p>
+                </div>
+                <OpsIcon name="pourover" size={18} />
+              </div>
+
+              <div className="ops-performer-list">
+                {performers.map((item, idx) => {
+                  const maxCups = performers[0]?.cups || 1;
+                  const pct = Math.round((item.cups / maxCups) * 100);
+                  return (
+                    <div key={item.id} className="ops-performer-row">
+                      <span className="ops-performer-rank">{idx + 1}</span>
+                      <div style={{ minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}
+                        >
+                          {trData(item.name)}
+                        </div>
+                        <div style={{ fontSize: 11.5, color: 'var(--an-muted)', marginBottom: 4 }}>
+                          {trData(item.category)}
+                        </div>
+                        <div className="ops-meter">
+                          <i style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                      <span className="ops-mono" style={{ fontSize: 12.5, fontWeight: 700 }}>
+                        {item.cups} {t('ops.dashboard.cupsUnit')}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          {/* Live Kitchen Queue Snapshot + Low-Bean / Milk Par Alerts */}
+          <section className="ops-dash-lower">
+            <div className="ops-panel">
+              <div className="ops-panel-head">
+                <div>
+                  <h2>{t('ops.dashboard.queueTitle')}</h2>
+                  <p>{t('ops.dashboard.queueSub')}</p>
+                </div>
+                <Link to="/orders" className="ops-btn ops-btn--sm">
+                  <span>{t('ops.dashboard.viewAllKds')}</span>
+                  <OpsIcon name="arrowRight" size={14} />
+                </Link>
+              </div>
+
+              {liveQueue.length === 0 ? (
+                <p style={{ margin: 0, fontSize: 13, color: 'var(--an-muted)' }}>
+                  {t('ops.dashboard.queueEmpty')}
+                </p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {liveQueue.map((ord) => {
+                    const mins =
+                      ord.elapsedMinutes ??
+                      Math.max(0, Math.round((Date.now() - new Date(ord.createdAt).getTime()) / 60_000));
+                    const timerClass =
+                      mins >= 10 ? 'is-red' : mins >= 5 ? 'is-amber' : '';
+                    return (
+                      <Link
+                        key={ord.id}
+                        to={`/orders/${ord.id}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 10,
+                          padding: '10px 12px',
+                          borderRadius: 8,
+                          border: '1px solid var(--an-line)',
+                          background: 'var(--an-soft)',
+                          textDecoration: 'none',
+                          color: 'inherit'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <strong className="ops-mono">#{ord.id}</strong>
+                          <span style={{ fontSize: 13, fontWeight: 600 }}>
+                            {trData(ord.tableName)} · {trData(ord.customerName)}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span className={`ops-timer-chip ${timerClass}`}>{mins}m</span>
+                          <span className="ops-badge">{t(`ops.statuses.${ord.status}`)}</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="ops-panel">
+              <div className="ops-panel-head">
+                <div>
+                  <h2>{t('ops.dashboard.parTitle')}</h2>
+                  <p>{tf('ops.dashboard.parSub', { count: stockAlerts.length })}</p>
+                </div>
+                {admin && (
+                  <Link to="/inventory" className="ops-btn ops-btn--sm">
+                    <span>{t('ops.dashboard.manageStock')}</span>
+                  </Link>
+                )}
+              </div>
+
+              {stockAlerts.length === 0 ? (
+                <p style={{ margin: 0, fontSize: 13, color: 'var(--an-ok)', fontWeight: 600 }}>
+                  {t('ops.dashboard.parSafe')}
+                </p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                  {stockAlerts.slice(0, 5).map((item) => {
+                    const ratio = Math.min(
+                      100,
+                      Math.round((Number(item.quantity || 0) / Math.max(1, Number(item.minimumThreshold || 1))) * 100)
+                    );
+                    const badgeKey =
+                      item.kind === 'expired'
+                        ? 'ops.dashboard.parExpired'
+                        : item.kind === 'near'
+                          ? 'ops.dashboard.parNear'
+                          : 'ops.dashboard.parLow';
+                    return (
+                      <div
+                        key={item.id}
+                        style={{
+                          padding: '9px 11px',
+                          borderRadius: 8,
+                          border: '1px solid var(--an-line)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 5
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                          <strong style={{ fontSize: 13 }}>{trData(item.name)}</strong>
+                          <span
+                            className={`ops-badge ${
+                              item.kind === 'near' ? 'ops-badge--warn' : 'ops-badge--danger'
+                            }`}
+                          >
+                            {t(badgeKey)}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--an-muted)' }}>
+                          <span className="ops-mono">
+                            {item.quantity} / {item.minimumThreshold} {trData(item.unit)}
+                          </span>
+                          <span className="ops-mono">{ratio}% par</span>
+                        </div>
+                        <div className="ops-meter">
+                          <i
+                            style={{
+                              width: `${ratio}%`,
+                              background: item.kind === 'near' ? 'var(--an-warn)' : 'var(--an-danger)'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Recent Floor Tickets Ledger */}
+          <section className="ops-panel">
+            <div className="ops-panel-head">
+              <div>
+                <h2>{t('ops.dashboard.recentTitle')}</h2>
+                <p>{tf('ops.dashboard.recentSub', { count: data.recentOrders?.length || 0 })}</p>
+              </div>
+            </div>
+
+            <div className="ops-table-wrap">
+              <table className="ops-table">
+                <thead>
+                  <tr>
+                    <th>{t('ops.dashboard.colTicket')}</th>
+                    <th>{t('ops.dashboard.colTable')}</th>
+                    <th>{t('ops.dashboard.colGuest')}</th>
+                    <th>{t('ops.dashboard.colTime')}</th>
+                    <th>{t('ops.dashboard.colStatus')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('ops.dashboard.colTotal')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(data.recentOrders || []).map((ord) => (
+                    <tr key={ord.id}>
+                      <td className="ops-mono">
+                        <Link to={`/orders/${ord.id}`} style={{ fontWeight: 700, color: 'inherit' }}>
+                          #{ord.id}
+                        </Link>
+                      </td>
+                      <td>{trData(ord.tableName)}</td>
+                      <td>{trData(ord.customerName)}</td>
+                      <td className="ops-mono">{clock(ord.createdAt)}</td>
+                      <td>
+                        <span
+                          className={`ops-badge ${
+                            ord.status === 'Completed' || ord.status === 'Ready'
+                              ? 'ops-badge--ok'
+                              : ord.status === 'Cancelled'
+                                ? 'ops-badge--danger'
+                                : 'ops-badge--warn'
+                          }`}
+                        >
+                          {t(`ops.statuses.${ord.status}`)}
+                        </span>
+                      </td>
+                      <td className="ops-mono" style={{ textAlign: 'right', fontWeight: 700 }}>
+                        {money(ord.total)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 }

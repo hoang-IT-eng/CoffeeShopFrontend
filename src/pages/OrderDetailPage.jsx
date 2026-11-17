@@ -1,121 +1,229 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { api, vnd, when } from '../api';
+import { api } from '../api';
+import { useLang } from '../i18n';
+import OpsIcon from '../components/OpsIcons';
+
+const STAGES = ['New', 'Processing', 'Ready', 'Completed'];
 
 export default function OrderDetailPage() {
   const { id } = useParams();
+  const { t, tf, trData, money, when } = useLang();
+
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    api(`/api/orders/${id}`).then(setOrder).catch((err) => setError(err.message));
+  const load = useCallback(async () => {
+    try {
+      const data = await api(`/api/orders/${id}`);
+      setOrder(data);
+    } catch (err) {
+      setError(err.message);
+    }
   }, [id]);
 
-  if (error) {
-    return (
-      <div className="board p-space-xl max-w-3xl mx-auto mt-space-xl rounded-xl bg-error-container text-on-error-container">
-        {error}
-      </div>
-    );
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function updateStatus(nextStatus) {
+    setBusy(true);
+    setError('');
+    try {
+      await api(`/api/orders/${id}/status`, {
+        method: 'POST',
+        body: { status: nextStatus }
+      });
+      window.dispatchEvent(new CustomEvent('an:shift-updated'));
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
   }
-  if (!order) {
-    return (
-      <div className="board p-space-2xl text-center font-label-md text-on-surface-variant">
-        Đang tải chi tiết đơn hàng...
-      </div>
-    );
+
+  async function handleCancel() {
+    setBusy(true);
+    setError('');
+    try {
+      await api(`/api/orders/${id}/cancel`, { method: 'POST' });
+      window.dispatchEvent(new CustomEvent('an:shift-updated'));
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
   }
+
+  const stageIdx = order ? STAGES.indexOf(order.status) : -1;
 
   return (
-    <div className="board max-w-4xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-lg">
-      <div className="flex items-center justify-between flex-wrap gap-space-md">
+    <div className="ops-page">
+      <header className="ops-header">
         <div>
-          <div className="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
-            <Link to="/orders" className="hover:text-secondary no-underline">
-              KDS Pha Chế &amp; Đơn Hàng
-            </Link>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-secondary font-bold">Phiếu #HD-{order.id}</span>
-          </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary font-bold mt-1">
-            Chi Tiết Hóa Đơn #HD-{order.id}
-          </h1>
+          <h1>{tf('ops.orders.detailTitle', { id })}</h1>
+          {order && (
+            <p>
+              {trData(order.tableName)} · {trData(order.customerName)} · {t('ops.orders.createdAt')}:{' '}
+              <span className="ops-mono">{when(order.createdAt)}</span>
+            </p>
+          )}
         </div>
 
-        <div className="flex items-center gap-space-sm">
-          <Link
-            to="/orders"
-            className="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface font-label-md font-bold flex items-center gap-1 no-underline"
-          >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-            <span>Quay lại KDS</span>
+        <div className="ops-actions">
+          <Link to="/orders" className="ops-btn">
+            <OpsIcon name="arrowLeft" size={15} />
+            <span>{t('ops.orders.backToKds')}</span>
           </Link>
-          <Link
-            to={`/payments/${order.id}`}
-            className="px-space-lg py-space-sm rounded-lg bg-secondary text-on-secondary font-label-md font-bold shadow-md flex items-center gap-1 no-underline"
-          >
-            <span className="material-symbols-outlined text-[18px]">payments</span>
-            <span>Thanh toán đơn này</span>
-          </Link>
+          {order && order.status === 'New' && (
+            <button
+              type="button"
+              disabled={busy}
+              className="ops-btn ops-btn--primary"
+              onClick={() => updateStatus('Processing')}
+            >
+              <OpsIcon name="bolt" size={15} />
+              <span>{t('ops.orders.bumpStart')}</span>
+            </button>
+          )}
+          {order && order.status === 'Processing' && (
+            <button
+              type="button"
+              disabled={busy}
+              className="ops-btn ops-btn--espresso"
+              onClick={() => updateStatus('Ready')}
+            >
+              <OpsIcon name="check" size={15} />
+              <span>{t('ops.orders.bumpReady')}</span>
+            </button>
+          )}
+          {order && (order.status === 'Ready' || order.status === 'PendingMobilePayment') && (
+            <>
+              <button
+                type="button"
+                disabled={busy}
+                className="ops-btn ops-btn--ok"
+                onClick={() => updateStatus('Completed')}
+              >
+                <OpsIcon name="check" size={15} />
+                <span>{t('ops.orders.bumpServe')}</span>
+              </button>
+              <Link to={`/payments/${order.id}`} className="ops-btn ops-btn--primary">
+                <OpsIcon name="payments" size={15} />
+                <span>{t('ops.orders.collectPay')}</span>
+              </Link>
+            </>
+          )}
+          {order && (order.status === 'New' || order.status === 'Processing') && (
+            <button
+              type="button"
+              disabled={busy}
+              className="ops-btn ops-btn--danger"
+              onClick={handleCancel}
+            >
+              <OpsIcon name="close" size={15} />
+              <span>{t('ops.orders.cancelOrder')}</span>
+            </button>
+          )}
         </div>
-      </div>
+      </header>
 
-      <section className="bg-surface-container-lowest rounded-2xl shadow-md overflow-hidden">
-        <div className="p-space-lg bg-primary-container text-on-primary flex flex-wrap items-center justify-between gap-space-md">
-          <div className="flex items-center gap-space-md">
-            <div className="w-12 h-12 rounded-xl bg-secondary-container text-on-secondary-container font-headline-sm font-bold flex items-center justify-center">
-              {order.tableName || 'POS'}
+      {error && <div className="ops-alert">{error}</div>}
+
+      {order && (
+        <>
+          {/* Stage Stepper */}
+          <section className="ops-panel">
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                gap: 10
+              }}
+            >
+              {STAGES.map((st, idx) => {
+                const active = stageIdx >= idx;
+                return (
+                  <div
+                    key={st}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: 8,
+                      border: active
+                        ? '1px solid var(--an-caramel)'
+                        : '1px solid var(--an-line)',
+                      background: active
+                        ? 'color-mix(in srgb, var(--an-caramel) 14%, var(--an-panel))'
+                        : 'var(--an-soft)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8
+                    }}
+                  >
+                    <span className="ops-performer-rank">{idx + 1}</span>
+                    <strong style={{ fontSize: 13 }}>{t(`ops.statuses.${st}`)}</strong>
+                  </div>
+                );
+              })}
             </div>
-            <div>
-              <h2 className="font-headline-sm text-headline-sm font-bold">
-                Bàn: {order.tableName || 'Mang đi'} • Khách: {order.customerName}
-              </h2>
-              <span className="font-label-sm text-label-sm text-on-primary-container">
-                Thời gian tạo: {when(order.createdAt)}
-              </span>
+          </section>
+
+          {/* Ticket Line Items */}
+          <section className="ops-panel">
+            <div className="ops-table-wrap">
+              <table className="ops-table">
+                <thead>
+                  <tr>
+                    <th>{t('ops.orders.lineItem')}</th>
+                    <th style={{ textAlign: 'center' }}>{t('ops.orders.qty')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('ops.orders.unitPrice')}</th>
+                    <th style={{ textAlign: 'right' }}>{t('ops.orders.lineTotal')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(order.details || []).map((line, i) => (
+                    <tr key={line.id || i}>
+                      <td>
+                        <strong style={{ fontSize: 13.5 }}>{trData(line.name)}</strong>
+                        {line.modifiers && (
+                          <div style={{ fontSize: 12, color: 'var(--an-muted)', marginTop: 2 }}>
+                            {trData(line.modifiers)}
+                          </div>
+                        )}
+                      </td>
+                      <td className="ops-mono" style={{ textAlign: 'center', fontWeight: 700 }}>
+                        {line.quantity}
+                      </td>
+                      <td className="ops-mono" style={{ textAlign: 'right' }}>
+                        {money(line.price)}
+                      </td>
+                      <td className="ops-mono" style={{ textAlign: 'right', fontWeight: 700 }}>
+                        {money(line.price * line.quantity)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colSpan={3} style={{ paddingTop: 14, fontWeight: 700 }}>
+                      {t('ops.orders.grandTotal')}
+                    </td>
+                    <td
+                      className="ops-mono"
+                      style={{ paddingTop: 14, textAlign: 'right', fontSize: 18, fontWeight: 700 }}
+                    >
+                      {money(order.total)}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
-          </div>
-          <span className="px-space-md py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm font-bold">
-            Trạng thái: {order.status}
-          </span>
-        </div>
-
-        <div className="p-space-lg">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase">
-                <th className="py-3 px-space-md">Tên món</th>
-                <th className="py-3 px-space-md text-center">Số lượng</th>
-                <th className="py-3 px-space-md text-right">Đơn giá</th>
-                <th className="py-3 px-space-md text-right">Thành tiền</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-surface-container font-body-md">
-              {(order.details || []).map((detail) => (
-                <tr key={detail.id} className="hover:bg-surface-container-low/50">
-                  <td className="py-3.5 px-space-md font-bold text-primary">{detail.name}</td>
-                  <td className="py-3.5 px-space-md text-center font-mono font-bold">
-                    x{detail.quantity}
-                  </td>
-                  <td className="py-3.5 px-space-md text-right font-mono">{vnd(detail.price)}</td>
-                  <td className="py-3.5 px-space-md text-right font-mono font-bold text-secondary">
-                    {vnd(detail.price * detail.quantity)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="mt-space-lg p-space-md rounded-xl bg-surface-container-low flex items-center justify-between">
-            <span className="font-headline-sm text-headline-sm text-primary font-bold">
-              Tổng cộng thanh toán:
-            </span>
-            <span className="font-price-display-lg text-price-display-lg text-secondary font-black">
-              {vnd(order.total)}
-            </span>
-          </div>
-        </div>
-      </section>
+          </section>
+        </>
+      )}
     </div>
   );
 }

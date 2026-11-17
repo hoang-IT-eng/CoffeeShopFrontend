@@ -1,363 +1,441 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, vnd } from '../api';
+import { api } from '../api';
+import { useLang } from '../i18n';
+import OpsIcon from '../components/OpsIcons';
 
-const ranges = [
-  { id: 'today', label: 'Hôm nay' },
-  { id: 'week', label: '7 ngày' },
-  { id: 'month', label: '30 ngày' },
-  { id: 'year', label: 'Năm' }
-];
-
-const filters = [
-  { id: 'all', label: 'Tất cả' },
-  { id: 'New', label: 'Mới' },
-  { id: 'Processing', label: 'Đang pha' },
-  { id: 'Ready', label: 'Xong món' },
-  { id: 'Completed', label: 'Đã thu' }
-];
-
-const steps = ['Nhận', 'Pha', 'Xong', 'Thu'];
-
-function statusLabel(status) {
+function formatElapsed(createdAt, nowMs) {
+  const diffSec = Math.max(0, Math.floor((nowMs - new Date(createdAt).getTime()) / 1000));
+  const mins = Math.floor(diffSec / 60);
+  const secs = diffSec % 60;
   return {
-    New: 'Mới',
-    Processing: 'Đang pha',
-    Ready: 'Xong món',
-    Completed: 'Đã thu',
-    PendingMobilePayment: 'Chờ trả',
-    Cancelled: 'Huỷ'
-  }[status] || status;
-}
-
-function money(value) {
-  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Number(value) || 0);
-}
-
-function clock(value) {
-  if (!value) return '';
-  return new Date(value).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-}
-
-function stepCount(status) {
-  if (status === 'Completed') return 4;
-  if (status === 'Ready' || status === 'PendingMobilePayment') return 3;
-  if (status === 'Processing') return 2;
-  if (status === 'New') return 1;
-  return 0;
-}
-
-function initials(name) {
-  const parts = (name || 'K').trim().split(/\s+/);
-  return ((parts[0]?.[0] || 'K') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+    mins,
+    display: `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+  };
 }
 
 export default function OrdersPage() {
+  const { t, tf, trData, money, clock } = useLang();
+
+  const [viewMode, setViewMode] = useState('kds');
   const [orders, setOrders] = useState([]);
-  const [dash, setDash] = useState(null);
-  const [range, setRange] = useState('today');
-  const [filter, setFilter] = useState('all');
-  const [selectedId, setSelectedId] = useState(null);
+  const [ledgerFilter, setLedgerFilter] = useState('ALL');
+  const [search, setSearch] = useState('');
+  const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
-  function loadOrders() {
-    return api('/api/orders').then((rows) => {
-      setOrders(rows || []);
-      setSelectedId((current) => current || rows?.[0]?.id || null);
-    });
-  }
-
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    Promise.all([
-      loadOrders(),
-      api(`/api/dashboard?range=${range}`).then((payload) => {
-        if (alive) setDash(payload);
-      })
-    ])
-      .catch((err) => {
-        if (alive) setError(err.message);
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [range]);
-
-  async function updateStatus(id, status) {
-    setError('');
+  const loadOrders = useCallback(async () => {
     try {
-      const result = await api(`/api/orders/${id}/status`, { method: 'POST', body: { status } });
-      setMessage(result.message || 'Đã cập nhật đơn.');
-      await loadOrders();
+      const list = await api('/api/orders');
+      setOrders(list || []);
     } catch (err) {
       setError(err.message);
     }
+  }, []);
+
+  useEffect(() => {
+    loadOrders();
+    const poll = window.setInterval(loadOrders, 12_000);
+    const tick = window.setInterval(() => setNowMs(Date.now()), 1_000);
+    return () => {
+      window.clearInterval(poll);
+      window.clearInterval(tick);
+    };
+  }, [loadOrders]);
+
+  async function bumpStatus(orderId, nextStatus) {
+    setError('');
+    setBusyId(orderId);
+    try {
+      await api(`/api/orders/${orderId}/status`, {
+        method: 'POST',
+        body: { status: nextStatus }
+      });
+      window.dispatchEvent(new CustomEvent('an:shift-updated'));
+      await loadOrders();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyId(null);
+    }
   }
 
-  const visible = useMemo(
-    () => orders.filter((order) => filter === 'all' || order.status === filter),
-    [orders, filter]
+  async function cancelOrder(orderId) {
+    setError('');
+    setBusyId(orderId);
+    try {
+      await api(`/api/orders/${orderId}/cancel`, { method: 'POST' });
+      window.dispatchEvent(new CustomEvent('an:shift-updated'));
+      await loadOrders();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  const openCount = useMemo(
+    () => orders.filter((o) => o.status !== 'Completed' && o.status !== 'Cancelled').length,
+    [orders]
   );
-  const selected = visible.find((order) => order.id === selectedId) || visible[0] || null;
-  const openCount = orders.filter((order) => order.status !== 'Completed' && order.status !== 'Cancelled').length;
-  const doneCount = orders.filter((order) => order.status === 'Completed').length;
-  const doneRatio = orders.length ? Math.round((doneCount / orders.length) * 100) : 0;
-  const average = orders.length
-    ? orders.reduce((sum, order) => sum + Number(order.total || 0), 0) / orders.length
-    : 0;
-  const week = dash?.week || [];
-  const weekMax = Math.max(1, ...week.map((day) => Number(day.revenue) || 0));
-  const showWeek = week.some((day) => Number(day.revenue) > 0);
 
-  const itemTotals = new Map();
-  orders.forEach((order) => {
-    (order.details || []).forEach((detail) => {
-      const name = detail.name || 'Món';
-      const current = itemTotals.get(name) || 0;
-      itemTotals.set(name, current + Number(detail.quantity || 0));
+  const kdsColumns = useMemo(
+    () => [
+      {
+        key: 'New',
+        title: t('ops.orders.colQueued'),
+        icon: 'clock',
+        items: orders.filter((o) => o.status === 'New')
+      },
+      {
+        key: 'Processing',
+        title: t('ops.orders.colPulling'),
+        icon: 'pourover',
+        items: orders.filter((o) => o.status === 'Processing')
+      },
+      {
+        key: 'Ready',
+        title: t('ops.orders.colReady'),
+        icon: 'roastery',
+        items: orders.filter((o) => o.status === 'Ready' || o.status === 'PendingMobilePayment')
+      },
+      {
+        key: 'Completed',
+        title: t('ops.orders.colServed'),
+        icon: 'check',
+        items: orders.filter((o) => o.status === 'Completed').slice(0, 6)
+      }
+    ],
+    [orders, t]
+  );
+
+  const filteredLedger = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return orders.filter((ord) => {
+      if (ledgerFilter !== 'ALL' && ord.status !== ledgerFilter) return false;
+      if (!q) return true;
+      return (
+        String(ord.id).includes(q) ||
+        trData(ord.tableName).toLowerCase().includes(q) ||
+        trData(ord.customerName).toLowerCase().includes(q)
+      );
     });
-  });
-  const topItems = [...itemTotals.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
-  const itemMax = Math.max(1, ...topItems.map((item) => item[1]));
-  const itemSum = Math.max(1, [...itemTotals.values()].reduce((a, b) => a + b, 0));
-
-  const tableTotals = new Map();
-  orders.forEach((order) => {
-    const name = order.tableName || 'Mang đi';
-    tableTotals.set(name, (tableTotals.get(name) || 0) + Number(order.total || 0));
-  });
-  const topTables = [...tableTotals.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
-  const tableMax = Math.max(1, ...topTables.map((item) => item[1]));
-
-  const revenue = Number(dash?.revenue || 0);
-  const previous = Number(dash?.previousRevenue || 0);
-  const delta = previous === 0
-    ? (revenue === 0 ? 'Bằng kỳ trước' : 'Kỳ trước chưa có doanh thu')
-    : `${revenue >= previous ? '+' : ''}${Math.round(((revenue - previous) / previous) * 100)}% so với kỳ trước`;
-
-  const shots = (selected?.details || []).slice(0, 2);
-  const sparkPoints = (dash?.points || week).slice(-12);
-  const sparkMax = Math.max(1, ...sparkPoints.map((point) => Number(point.revenue) || 0));
-  const showSpark = sparkPoints.some((point) => Number(point.revenue) > 0);
+  }, [orders, ledgerFilter, search, trData]);
 
   return (
-    <div className="board">
-      <header className="board-head">
+    <div className="ops-page">
+      <header className="ops-header">
         <div>
-          <h1>Bếp và đơn</h1>
-          <p>{openCount} đơn đang mở · {doneRatio}% đã thu</p>
+          <h1>{t('ops.orders.title')}</h1>
+          <p>{tf('ops.orders.subtitle', { open: openCount })}</p>
         </div>
-        <div className="board-tools">
-          <div className="board-range" role="group" aria-label="Khoảng doanh thu">
-            {ranges.map((item) => (
-              <button key={item.id} type="button" className={range === item.id ? 'is-on' : ''} onClick={() => setRange(item.id)}>
-                {item.label}
-              </button>
-            ))}
+
+        <div className="ops-actions">
+          <div className="ops-seg" role="group" aria-label="View mode">
+            <button
+              type="button"
+              className={viewMode === 'kds' ? 'is-on' : ''}
+              onClick={() => setViewMode('kds')}
+            >
+              <OpsIcon name="kds" size={15} />
+              <span>{t('ops.orders.viewKds')}</span>
+            </button>
+            <button
+              type="button"
+              className={viewMode === 'ledger' ? 'is-on' : ''}
+              onClick={() => setViewMode('ledger')}
+            >
+              <OpsIcon name="receipt" size={15} />
+              <span>{t('ops.orders.viewLedger')}</span>
+            </button>
           </div>
-          <Link className="board-sell" to="/orders/new">Bán hàng</Link>
+
+          <Link to="/orders/new" className="ops-btn ops-btn--primary">
+            <OpsIcon name="plus" size={16} />
+            <span>{t('ops.orders.newPosBtn')}</span>
+          </Link>
         </div>
       </header>
 
-      {error && <p className="board-banner">{error}</p>}
-      {message && <p className="board-banner" style={{ color: 'var(--an-ok)' }}>{message}</p>}
-      {loading && !dash && <p className="board-loading">Đang tải đơn.</p>}
+      {error && <div className="ops-alert">{error}</div>}
 
-      <section className="board-strip" aria-label="Số liệu đơn">
-        <article className="board-revenue">
-          <h2>Doanh thu kỳ</h2>
-          <strong>{money(revenue)}<span>đ</span></strong>
-          <em>{delta}</em>
-          {showSpark && (
-            <div className="board-sparkline" aria-hidden="true">
-              {sparkPoints.map((point) => (
-                <i key={point.label} style={{ height: `${Math.round(((Number(point.revenue) || 0) / sparkMax) * 100)}%` }} />
-              ))}
-            </div>
-          )}
-        </article>
-        <article className="board-metric">
-          <p>Đơn đang mở</p>
-          <strong>{openCount}</strong>
-          <p className="board-note">{orders.length} đơn trong danh sách</p>
-        </article>
-        <article className="board-metric">
-          <p>Trong kỳ</p>
-          <strong>{dash?.orderCount ?? orders.length}</strong>
-          <p className="board-note">{doneCount} đã thu</p>
-        </article>
-        <article className="board-metric">
-          <p>Trung bình đơn</p>
-          <strong>{money(average)}<span>đ</span></strong>
-          <p className="board-note">{doneRatio}% hoàn tất</p>
-        </article>
-      </section>
+      {viewMode === 'kds' ? (
+        <section className="ops-kds-board" aria-label={t('ops.orders.viewKds')}>
+          {kdsColumns.map((col) => (
+            <div key={col.key} className="ops-kds-col" data-testid={`kds-col-${col.key}`}>
+              <div className="ops-kds-col-head">
+                <h2>
+                  <OpsIcon name={col.icon} size={15} />
+                  <span>{col.title}</span>
+                </h2>
+                <span className="ops-badge ops-mono">{col.items.length}</span>
+              </div>
 
-      <section className="board-mid">
-        <article className="board-card">
-          <div className="board-card-head">
-            <div>
-              <h2>Các đơn</h2>
-              <p>{visible.length} dòng đang hiện</p>
+              {col.items.length === 0 ? (
+                <div
+                  style={{
+                    padding: '28px 10px',
+                    textAlign: 'center',
+                    fontSize: 12.5,
+                    color: 'var(--an-muted)'
+                  }}
+                >
+                  {t('ops.orders.emptyCol')}
+                </div>
+              ) : (
+                col.items.map((ord) => {
+                  const timer = formatElapsed(ord.createdAt, nowMs);
+                  const isDone = ord.status === 'Completed';
+                  const tier = isDone
+                    ? 'calm'
+                    : timer.mins >= 10
+                      ? 'red'
+                      : timer.mins >= 5
+                        ? 'amber'
+                        : 'calm';
+
+                  return (
+                    <article
+                      key={ord.id}
+                      data-testid={`kds-ticket-${ord.id}`}
+                      className={`ops-kds-ticket ${
+                        tier === 'red' ? 'timer-red' : tier === 'amber' ? 'timer-amber' : ''
+                      }`}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                          <strong className="ops-mono" style={{ fontSize: 15 }}>
+                            #{ord.id}
+                          </strong>
+                          <span className="ops-badge ops-badge--caramel">
+                            {trData(ord.tableName || t('ops.orders.takeaway'))}
+                          </span>
+                        </div>
+
+                        {!isDone ? (
+                          <span
+                            className={`ops-timer-chip ${
+                              tier === 'red' ? 'is-red' : tier === 'amber' ? 'is-amber' : ''
+                            }`}
+                          >
+                            {timer.display}
+                          </span>
+                        ) : (
+                          <span className="ops-mono" style={{ fontSize: 11.5, color: 'var(--an-muted)' }}>
+                            {clock(ord.createdAt)}
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={{ fontSize: 12, color: 'var(--an-muted)', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{trData(ord.customerName || t('ops.orders.guestFallback'))}</span>
+                        {!isDone && (
+                          <span style={{ fontWeight: 600 }}>
+                            {tier === 'red'
+                              ? t('ops.orders.slaOverdue')
+                              : tier === 'amber'
+                                ? t('ops.orders.slaWarn')
+                                : t('ops.orders.slaCalm')}
+                          </span>
+                        )}
+                      </div>
+
+                      <ul className="ops-kds-items">
+                        {(ord.details || []).map((line, i) => (
+                          <li key={line.id || `${ord.id}-${i}`}>
+                            <div>
+                              <strong className="ops-mono">{line.quantity}×</strong>{' '}
+                              <span style={{ fontWeight: 600 }}>{trData(line.name)}</span>
+                            </div>
+                            {line.modifiers && <small>{trData(line.modifiers)}</small>}
+                          </li>
+                        ))}
+                      </ul>
+
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                        <strong className="ops-mono" style={{ fontSize: 13 }}>
+                          {money(ord.total)}
+                        </strong>
+
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          {ord.status === 'New' && (
+                            <button
+                              type="button"
+                              disabled={busyId === ord.id}
+                              className="ops-btn ops-btn--primary ops-btn--sm"
+                              onClick={() => bumpStatus(ord.id, 'Processing')}
+                            >
+                              <OpsIcon name="bolt" size={14} />
+                              <span>{t('ops.orders.bumpStart')}</span>
+                            </button>
+                          )}
+
+                          {ord.status === 'Processing' && (
+                            <button
+                              type="button"
+                              disabled={busyId === ord.id}
+                              className="ops-btn ops-btn--espresso ops-btn--sm"
+                              onClick={() => bumpStatus(ord.id, 'Ready')}
+                            >
+                              <OpsIcon name="check" size={14} />
+                              <span>{t('ops.orders.bumpReady')}</span>
+                            </button>
+                          )}
+
+                          {(ord.status === 'Ready' || ord.status === 'PendingMobilePayment') && (
+                            <>
+                              <button
+                                type="button"
+                                disabled={busyId === ord.id}
+                                className="ops-btn ops-btn--ok ops-btn--sm"
+                                onClick={() => bumpStatus(ord.id, 'Completed')}
+                              >
+                                <OpsIcon name="check" size={14} />
+                                <span>{t('ops.orders.bumpServe')}</span>
+                              </button>
+                              <Link
+                                to={`/payments/${ord.id}`}
+                                className="ops-btn ops-btn--sm"
+                              >
+                                {t('ops.orders.collectPay')}
+                              </Link>
+                            </>
+                          )}
+
+                          <Link to={`/orders/${ord.id}`} className="ops-btn ops-btn--sm">
+                            {t('ops.orders.openDetail')}
+                          </Link>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })
+              )}
             </div>
-            <div className="board-filters" role="group" aria-label="Lọc trạng thái">
-              {filters.map((item) => (
-                <button key={item.id} type="button" className={filter === item.id ? 'is-on' : ''} onClick={() => setFilter(item.id)}>
-                  {item.label}
+          ))}
+        </section>
+      ) : (
+        <section className="ops-panel">
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 12,
+              flexWrap: 'wrap',
+              marginBottom: 14
+            }}
+          >
+            <div className="ops-cat-tabs" style={{ paddingBottom: 0 }}>
+              {['ALL', 'New', 'Processing', 'Ready', 'Completed', 'Cancelled'].map((st) => (
+                <button
+                  key={st}
+                  type="button"
+                  className={`ops-cat-tab ${ledgerFilter === st ? 'is-on' : ''}`}
+                  onClick={() => setLedgerFilter(st)}
+                >
+                  {st === 'ALL' ? t('ops.orders.filterAll') : t(`ops.statuses.${st}`)}
                 </button>
               ))}
             </div>
+
+            <div style={{ width: 240 }}>
+              <input
+                className="ops-input"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('ops.shell.quickSearchPlaceholder')}
+              />
+            </div>
           </div>
-          <div className="board-table-wrap">
-            <table className="board-table">
+
+          <div className="ops-table-wrap">
+            <table className="ops-table">
               <thead>
                 <tr>
-                  <th>Bàn</th>
-                  <th>Đơn</th>
-                  <th>Món</th>
-                  <th>Số lượng</th>
-                  <th>Tiền</th>
-                  <th>Giờ</th>
-                  <th>Trạng thái</th>
+                  <th>{t('ops.dashboard.colTicket')}</th>
+                  <th>{t('ops.dashboard.colTable')}</th>
+                  <th>{t('ops.dashboard.colGuest')}</th>
+                  <th>{t('ops.dashboard.colTime')}</th>
+                  <th>{t('ops.dashboard.colStatus')}</th>
+                  <th style={{ textAlign: 'right' }}>{t('ops.dashboard.colTotal')}</th>
+                  <th style={{ textAlign: 'right' }} />
                 </tr>
               </thead>
               <tbody>
-                {visible.map((order) => {
-                  const qty = (order.details || []).reduce((sum, detail) => sum + Number(detail.quantity || 0), 0);
-                  const first = order.details?.[0]?.name || order.customerName || 'Khách';
-                  return (
-                    <tr
-                      key={order.id}
-                      className={selected?.id === order.id ? 'is-on' : ''}
-                      onClick={() => setSelectedId(order.id)}
-                    >
-                      <td>{order.tableName || 'Mang đi'}</td>
-                      <td>#{order.id}</td>
-                      <td>{first}</td>
-                      <td>{qty || '—'}</td>
-                      <td>{vnd(order.total)}</td>
-                      <td>{clock(order.createdAt)}</td>
-                      <td><span className={`board-status is-${(order.status || '').toLowerCase()}`}>{statusLabel(order.status)}</span></td>
-                    </tr>
-                  );
-                })}
+                {filteredLedger.map((ord) => (
+                  <tr key={ord.id}>
+                    <td className="ops-mono">
+                      <Link to={`/orders/${ord.id}`} style={{ fontWeight: 700, color: 'inherit' }}>
+                        #{ord.id}
+                      </Link>
+                    </td>
+                    <td>{trData(ord.tableName)}</td>
+                    <td>{trData(ord.customerName)}</td>
+                    <td className="ops-mono">{clock(ord.createdAt)}</td>
+                    <td>
+                      <span
+                        className={`ops-badge ${
+                          ord.status === 'Completed' || ord.status === 'Ready'
+                            ? 'ops-badge--ok'
+                            : ord.status === 'Cancelled'
+                              ? 'ops-badge--danger'
+                              : 'ops-badge--warn'
+                        }`}
+                      >
+                        {t(`ops.statuses.${ord.status}`)}
+                      </span>
+                    </td>
+                    <td className="ops-mono" style={{ textAlign: 'right', fontWeight: 700 }}>
+                      {money(ord.total)}
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', gap: 6 }}>
+                        {ord.status === 'New' && (
+                          <button
+                            type="button"
+                            className="ops-btn ops-btn--primary ops-btn--sm"
+                            onClick={() => bumpStatus(ord.id, 'Processing')}
+                          >
+                            {t('ops.orders.bumpStart')}
+                          </button>
+                        )}
+                        {ord.status === 'Processing' && (
+                          <button
+                            type="button"
+                            className="ops-btn ops-btn--espresso ops-btn--sm"
+                            onClick={() => bumpStatus(ord.id, 'Ready')}
+                          >
+                            {t('ops.orders.bumpReady')}
+                          </button>
+                        )}
+                        {ord.status === 'Ready' && (
+                          <Link to={`/payments/${ord.id}`} className="ops-btn ops-btn--ok ops-btn--sm">
+                            {t('ops.orders.collectPay')}
+                          </Link>
+                        )}
+                        {(ord.status === 'New' || ord.status === 'Processing') && (
+                          <button
+                            type="button"
+                            className="ops-btn ops-btn--danger ops-btn--sm"
+                            onClick={() => cancelOrder(ord.id)}
+                          >
+                            {t('ops.orders.cancelOrder')}
+                          </button>
+                        )}
+                        <Link to={`/orders/${ord.id}`} className="ops-btn ops-btn--sm">
+                          {t('ops.orders.openDetail')}
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
-            {!visible.length && <p className="board-note">Chưa có đơn trong bộ lọc này.</p>}
           </div>
-        </article>
-
-        <article className="board-card board-detail">
-          {selected ? (
-            <>
-              <div className="board-detail-top">
-                <div>
-                  <h2>{selected.tableName || 'Mang đi'}</h2>
-                  <small>Đơn #{selected.id} · {vnd(selected.total)}</small>
-                </div>
-                <span className="board-out">{statusLabel(selected.status)}</span>
-              </div>
-              <div className="board-shots">
-                {(shots.length ? shots : [{ name: 'Chưa có món', quantity: 0 }]).map((detail, index) => (
-                  <div className="board-shot" key={detail.id || index}>
-                    {detail.imageUrl && <img src={detail.imageUrl} alt="" />}
-                    <strong>{detail.name || 'Món'}</strong>
-                    <span>{detail.quantity ? `${detail.quantity} phần` : 'Chưa ghi món'}{detail.price ? ` · ${vnd(detail.price)}` : ''}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="board-track" aria-label="Tiến độ đơn">
-                {steps.map((label, index) => (
-                  <span key={label} className={index < stepCount(selected.status) ? 'is-on' : ''}>
-                    <i />
-                    <small>{label}</small>
-                  </span>
-                ))}
-              </div>
-              <div className="board-person">
-                <b>{initials(selected.customerName)}</b>
-                <div>
-                  <strong>{selected.customerName || 'Khách'}</strong>
-                  <small style={{ display: 'block' }}>
-                    {(selected.details || []).reduce((sum, detail) => sum + Number(detail.quantity || 0), 0) || (selected.details || []).length} phần trong đơn
-                  </small>
-                </div>
-              </div>
-              <div className="board-actions">
-                {selected.status === 'New' && (
-                  <button type="button" onClick={() => updateStatus(selected.id, 'Processing')}>Bắt đầu pha</button>
-                )}
-                {selected.status === 'Processing' && (
-                  <button type="button" onClick={() => updateStatus(selected.id, 'Ready')}>Xong món</button>
-                )}
-                {selected.status === 'Ready' && <Link to={`/payments/${selected.id}`}>Thu tiền</Link>}
-                <Link className="is-quiet" to={`/orders/${selected.id}`}>Mở đơn</Link>
-              </div>
-            </>
-          ) : (
-            <p className="board-note">Chọn một đơn trong danh sách để xem chi tiết và cập nhật trạng thái.</p>
-          )}
-        </article>
-      </section>
-
-      <section className="board-bot">
-        <article className="board-card">
-          <div className="board-card-head">
-            <div>
-              <h2>Doanh thu theo ngày</h2>
-              <p>Bảy ngày gần nhất</p>
-            </div>
-            <strong>{vnd(week.reduce((sum, day) => sum + Number(day.revenue || 0), 0))}</strong>
-          </div>
-          {showWeek ? (
-            <div className="board-bars" aria-hidden="true">
-              {week.map((day) => (
-                <span key={day.label} className={day.isToday ? 'is-today' : ''} style={{ height: `${Math.round((Number(day.revenue || 0) / weekMax) * 100)}%` }} />
-              ))}
-            </div>
-          ) : (
-            <p className="board-note">Chưa có doanh thu trong 7 ngày.</p>
-          )}
-        </article>
-
-        <article className="board-card">
-          <div className="board-card-head">
-            <h2>Món được gọi</h2>
-          </div>
-          <div className="board-mix">
-            {topItems.map(([name, qty]) => (
-              <div key={name}>
-                <span>{name}</span>
-                <div className="board-line"><i style={{ width: `${Math.round((qty / itemMax) * 100)}%` }} /></div>
-                <b>{Math.round((qty / itemSum) * 100)}%</b>
-              </div>
-            ))}
-            {!topItems.length && <p className="board-note">Chưa có món trong các đơn này.</p>}
-          </div>
-        </article>
-
-        <article className="board-card">
-          <div className="board-card-head">
-            <h2>Bàn gọi nhiều</h2>
-          </div>
-          <div className="board-mix">
-            {topTables.map(([name, total]) => (
-              <div key={name}>
-                <span>{name}</span>
-                <div className="board-line"><i style={{ width: `${Math.round((total / tableMax) * 100)}%` }} /></div>
-                <b>{money(total)}</b>
-              </div>
-            ))}
-            {!topTables.length && <p className="board-note">Chưa có dữ liệu bàn.</p>}
-          </div>
-        </article>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

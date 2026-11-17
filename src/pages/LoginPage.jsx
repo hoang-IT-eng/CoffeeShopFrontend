@@ -1,9 +1,18 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../auth';
+import { useLang } from '../i18n';
+import OpsIcon from '../components/OpsIcons';
+
+const PRESETS = [
+  { key: 'admin', labelKey: 'ops.login.presetAdmin', email: 'newadmin@coffee.com', pass: 'NewAdmin@123' },
+  { key: 'cashier', labelKey: 'ops.login.presetCashier', email: 'cashier@coffee.com', pass: 'Cashier@123' },
+  { key: 'waiter', labelKey: 'ops.login.presetWaiter', email: 'waiter@coffee.com', pass: 'Waiter@123' }
+];
 
 export default function LoginPage() {
   const { user, ready, login } = useAuth();
+  const { lang, setLang, t } = useLang();
   const [email, setEmail] = useState('newadmin@coffee.com');
   const [password, setPassword] = useState('NewAdmin@123');
   const [rememberMe, setRememberMe] = useState(true);
@@ -26,130 +35,307 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="board min-h-screen flex flex-col justify-between relative overflow-hidden">
-      <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-secondary-container/15 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-primary-container/10 blur-3xl pointer-events-none" />
+    <div
+      className="ops-shell"
+      style={{
+        minHeight: '100vh',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '24px 16px'
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: 920,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 14
+        }}
+      >
+        <Link to="/" className="ops-btn ops-btn--sm">
+          <OpsIcon name="arrowLeft" size={15} />
+          <span>{t('ops.shell.navStorefront')}</span>
+        </Link>
 
-      <div className="flex-grow flex items-center justify-center p-margin">
-        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 rounded-2xl bg-surface-container-lowest shadow-2xl overflow-hidden border border-surface-container-highest">
-          {/* Left Branding Panel */}
-          <div className="md:col-span-5 p-space-2xl flex flex-col justify-between relative overflow-hidden" style={{ background: "#141210", color: "#f6f1ea" }}>
-            <div className="absolute -right-12 -bottom-12 w-48 h-48 rounded-full bg-secondary-container/15 blur-2xl pointer-events-none" />
-            <div className="flex flex-col gap-space-md">
-              <div className="flex items-center gap-space-sm">
-                <div className="w-12 h-12 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-md">
-                  <span className="material-symbols-outlined text-[28px]">coffee</span>
-                </div>
-                <div>
-                  <span className="font-headline-sm text-headline-sm font-bold block leading-none">
-                    Artisan Coffee
-                  </span>
-                  <span className="font-label-sm text-label-sm text-on-primary-container">
-                    POS &amp; Roastery System
-                  </span>
-                </div>
-              </div>
+        <div className="ops-lang-toggle" role="group" aria-label="Language">
+          <button
+            type="button"
+            className={lang === 'vi' ? 'is-on' : ''}
+            onClick={() => setLang('vi')}
+          >
+            VI
+          </button>
+          <button
+            type="button"
+            className={lang === 'en' ? 'is-on' : ''}
+            onClick={() => setLang('en')}
+          >
+            EN
+          </button>
+        </div>
+      </div>
 
-              <div className="mt-space-lg space-y-space-sm">
-                <h2 className="font-headline-md text-headline-md font-bold leading-snug">
+      <div
+        style={{
+          width: '100%',
+          maxWidth: 920,
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))',
+          borderRadius: 14,
+          overflow: 'hidden',
+          border: '1px solid var(--an-line)',
+          background: 'var(--an-panel)',
+          boxShadow: '0 22px 48px rgba(43, 29, 20, 0.14)'
+        }}
+      >
+        {/* Editorial Roastery Column */}
+        <div
+          style={{
+            background: '#2b1d14',
+            color: '#f5ecdf',
+            padding: '34px 30px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: 28
+          }}
+        >
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+              <span className="ops-brand-mark">
+                <OpsIcon name="roastery" size={20} />
+              </span>
+              <div>
+                <strong
+                  style={{
+                    fontFamily: 'var(--an-font-display)',
+                    fontSize: 27,
+                    fontWeight: 600,
+                    display: 'block',
+                    lineHeight: 1
+                  }}
+                >
                   An Roastery
-                </h2>
+                </strong>
+                <span style={{ fontSize: 11.5, color: '#b7a695' }}>{t('ops.login.badge')}</span>
               </div>
             </div>
 
-            <div className="pt-space-xl space-y-2 text-on-primary-container font-label-sm text-label-sm">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary-container text-[18px]">verified_user</span>
-                <span>Chi nhánh Trung Tâm (HCM-01)</span>
+            <h2
+              style={{
+                fontFamily: 'var(--an-font-display)',
+                fontSize: 'clamp(28px, 3vw, 35px)',
+                fontWeight: 600,
+                lineHeight: 1.12,
+                margin: '26px 0 10px',
+                color: '#f5ecdf'
+              }}
+            >
+              {t('ops.login.headline')}
+            </h2>
+            <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: '#ccbba8' }}>
+              {t('ops.login.sub')}
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#b5835a' }}>
+              <OpsIcon name="shield" size={16} />
+              <span>{t('ops.login.branch')}</span>
+            </div>
+
+            <div
+              style={{
+                padding: '12px 14px',
+                borderRadius: 10,
+                background: 'rgba(245, 236, 223, 0.06)',
+                border: '1px solid rgba(181, 131, 90, 0.28)'
+              }}
+            >
+              <div style={{ fontSize: 11.5, fontWeight: 600, color: '#e4cfb7', marginBottom: 8 }}>
+                {t('ops.login.demoLabel')}
               </div>
-              <div className="p-space-sm rounded-xl bg-surface-container-lowest/10 text-on-primary">
-                <span className="block text-[11px] text-secondary-fixed font-bold uppercase">Tài khoản Demo Admin:</span>
-                <span className="font-mono text-xs block mt-0.5">newadmin@coffee.com / NewAdmin@123</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {PRESETS.map((preset) => (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    onClick={() => {
+                      setEmail(preset.email);
+                      setPassword(preset.pass);
+                    }}
+                    style={{
+                      border:
+                        email === preset.email
+                          ? '1px solid #b5835a'
+                          : '1px solid rgba(245,236,223,0.18)',
+                      background:
+                        email === preset.email ? 'rgba(181, 131, 90, 0.28)' : 'transparent',
+                      color: '#f5ecdf',
+                      borderRadius: 7,
+                      padding: '5px 9px',
+                      fontSize: 11.5,
+                      fontWeight: 600,
+                      fontFamily: 'inherit',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {t(preset.labelKey)}
+                  </button>
+                ))}
+              </div>
+              <div className="ops-mono" style={{ marginTop: 8, fontSize: 11.5, color: '#ccbba8' }}>
+                {email} · {password}
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Right Form Panel */}
-          <form className="md:col-span-7 p-space-2xl flex flex-col justify-center gap-space-md" onSubmit={onSubmit}>
-            <div>
-              <h1 className="font-headline-lg text-headline-lg text-primary font-bold tracking-tight">
-                Đăng nhập
-              </h1>
+        {/* Form Column */}
+        <form
+          onSubmit={onSubmit}
+          style={{
+            padding: '34px 32px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            gap: 16
+          }}
+        >
+          <div>
+            <h1
+              style={{
+                margin: 0,
+                fontFamily: 'var(--an-font-display)',
+                fontSize: 32,
+                fontWeight: 600,
+                lineHeight: 1.08
+              }}
+            >
+              {t('ops.login.title')}
+            </h1>
+            <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--an-muted)' }}>
+              {t('ops.login.subtitle')}
+            </p>
+          </div>
+
+          {error && (
+            <div className="ops-alert" role="alert">
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <OpsIcon name="alert" size={17} />
+                {error}
+              </span>
             </div>
+          )}
 
-            {error && (
-              <div className="p-space-md rounded-xl bg-error-container text-on-error-container font-label-md text-label-md flex items-center gap-space-sm">
-                <span className="material-symbols-outlined text-[20px]">error</span>
-                <span>{error}</span>
-              </div>
-            )}
-
-            <div className="flex flex-col gap-1.5">
-              <label className="font-label-md text-label-md text-on-surface font-bold">Email nhân viên</label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]">
-                  mail
-                </span>
-                <input
-                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
-                  type="email"
-                  placeholder="vd: newadmin@coffee.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="font-label-md text-label-md text-on-surface font-bold">Mật khẩu / Mã PIN</label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]">
-                  lock
-                </span>
-                <input
-                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-secondary transition-all"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer font-label-md text-label-md text-on-surface-variant">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 accent-[#2b1d14] rounded"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                <span>Duy trì đăng nhập trong ca</span>
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail('newadmin@coffee.com');
-                  setPassword('NewAdmin@123');
+          <div className="ops-field">
+            <label htmlFor="staff-email">{t('ops.login.emailLabel')}</label>
+            <div style={{ position: 'relative' }}>
+              <span
+                style={{
+                  position: 'absolute',
+                  left: 11,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--an-muted)',
+                  display: 'grid'
                 }}
-                className="font-label-sm text-label-sm text-secondary hover:underline font-bold"
               >
-                Điền nhanh Admin
-              </button>
+                <OpsIcon name="mail" size={16} />
+              </span>
+              <input
+                id="staff-email"
+                className="ops-input"
+                style={{ paddingLeft: 36 }}
+                type="email"
+                placeholder={t('ops.login.emailPlaceholder')}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
+          </div>
+
+          <div className="ops-field">
+            <label htmlFor="staff-password">{t('ops.login.passwordLabel')}</label>
+            <div style={{ position: 'relative' }}>
+              <span
+                style={{
+                  position: 'absolute',
+                  left: 11,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--an-muted)',
+                  display: 'grid'
+                }}
+              >
+                <OpsIcon name="lock" size={16} />
+              </span>
+              <input
+                id="staff-password"
+                className="ops-input"
+                style={{ paddingLeft: 36 }}
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 10,
+              flexWrap: 'wrap',
+              fontSize: 12.5
+            }}
+          >
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 7, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                style={{ accentColor: '#2b1d14' }}
+              />
+              <span>{t('ops.login.remember')}</span>
+            </label>
 
             <button
-              type="submit"
-              disabled={loading}
-              className="mt-2 w-full h-14 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-headline-sm text-headline-sm font-bold shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+              type="button"
+              onClick={() => {
+                setEmail('newadmin@coffee.com');
+                setPassword('NewAdmin@123');
+              }}
+              style={{
+                border: 0,
+                background: 'transparent',
+                color: 'var(--an-caramel)',
+                fontWeight: 600,
+                fontSize: 12.5,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }}
             >
-              <span className="material-symbols-outlined text-secondary-container text-[22px]">login</span>
-              <span>{loading ? 'Đang xác thực...' : 'Vào Hệ Thống Artisan POS'}</span>
+              {t('ops.login.quickFill')}
             </button>
-          </form>
-        </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="ops-btn ops-btn--espresso"
+            style={{ height: 44, fontSize: 14, marginTop: 4 }}
+          >
+            <OpsIcon name="arrowRight" size={17} />
+            <span>{loading ? t('ops.login.submitting') : t('ops.login.submit')}</span>
+          </button>
+        </form>
       </div>
     </div>
   );

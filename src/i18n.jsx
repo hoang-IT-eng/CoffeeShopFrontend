@@ -1,4 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  opsVi,
+  opsEn,
+  trData as translateData,
+  formatTemplate,
+  moneyVnd,
+  whenLocale,
+  clockLocale
+} from './opsI18n';
 
 /**
  * Song ngữ VI/EN cho toàn bộ mặt tiền khách hàng:
@@ -938,9 +947,21 @@ const en = {
   }
 };
 
-const DICT = { vi, en };
+const DICT = {
+  vi: { ...vi, ops: opsVi },
+  en: { ...en, ops: opsEn }
+};
 
-const LanguageContext = createContext({ lang: 'vi', setLang: () => {}, t: (path) => path });
+const LanguageContext = createContext({
+  lang: 'vi',
+  setLang: () => {},
+  t: (path) => path,
+  tf: (path) => path,
+  trData: (val) => val,
+  money: (val) => moneyVnd(val, 'vi'),
+  when: (val) => whenLocale(val, 'vi'),
+  clock: (val) => clockLocale(val, 'vi')
+});
 
 function resolve(dict, path) {
   return path.split('.').reduce((node, key) => (node == null ? undefined : node[key]), dict);
@@ -965,17 +986,22 @@ export function LanguageProvider({ children }) {
     document.documentElement.lang = lang === 'vi' ? 'vi' : 'en';
   }, [lang]);
 
-  const value = useMemo(
-    () => ({
+  const value = useMemo(() => {
+    const t = (path) => {
+      const hit = resolve(DICT[lang], path);
+      return hit !== undefined ? hit : resolve(DICT.vi, path);
+    };
+    return {
       lang,
       setLang,
-      t: (path) => {
-        const hit = resolve(DICT[lang], path);
-        return hit !== undefined ? hit : resolve(DICT.vi, path);
-      }
-    }),
-    [lang]
-  );
+      t,
+      tf: (path, vars) => formatTemplate(t(path), vars),
+      trData: (val) => translateData(val, lang),
+      money: (val) => moneyVnd(val, lang),
+      when: (val) => whenLocale(val, lang),
+      clock: (val) => clockLocale(val, lang)
+    };
+  }, [lang]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }

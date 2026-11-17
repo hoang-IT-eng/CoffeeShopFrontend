@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
+import OpsIcon from './components/OpsIcons';
 import { hasRole, useAuth } from './auth';
+import { useLang } from './i18n';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
@@ -28,12 +30,16 @@ import ReportsPage from './pages/ReportsPage';
 
 function RequireAuth({ children }) {
   const { user, ready } = useAuth();
+  const { t } = useLang();
   if (!ready) {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="flex items-center gap-space-sm px-space-lg py-space-md rounded-xl bg-surface-container-lowest shadow-md">
-          <span className="material-symbols-outlined text-secondary animate-spin">sync</span>
-          <span className="font-label-md text-label-md text-primary font-bold">Đang mở An Roastery...</span>
+      <div
+        className="ops-shell"
+        style={{ alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      >
+        <div className="ops-panel" style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+          <OpsIcon name="roastery" size={20} />
+          <strong style={{ fontSize: 13.5 }}>{t('ops.shell.loadingApp')}</strong>
         </div>
       </div>
     );
@@ -44,13 +50,18 @@ function RequireAuth({ children }) {
 
 function RequireRole({ roles, children }) {
   const { user } = useAuth();
+  const { t } = useLang();
   if (!hasRole(user, ...roles)) {
     return (
-      <div className="board p-space-xl max-w-xl mx-auto mt-space-2xl rounded-xl bg-error-container text-on-error-container shadow-md flex items-center gap-space-md">
-        <span className="material-symbols-outlined text-[28px]">gpp_maybe</span>
-        <div>
-          <h2 className="font-headline-sm text-headline-sm font-bold">Không có quyền truy cập (403)</h2>
-          <p className="font-body-sm text-body-sm mt-1">Tài khoản của bạn không thuộc nhóm phân quyền được phép mở màn hình này.</p>
+      <div className="ops-page">
+        <div className="ops-alert" role="alert">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <OpsIcon name="shield" size={22} />
+            <div>
+              <strong style={{ display: 'block', fontSize: 14.5 }}>{t('ops.shell.forbiddenTitle')}</strong>
+              <span style={{ fontWeight: 400 }}>{t('ops.shell.forbiddenBody')}</span>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -89,7 +100,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route element={<RequireAuth><Layout /></RequireAuth>}>
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="shift" element={<ShiftPage />} />
+          <Route path="shift" element={<RequireRole roles={['Admin', 'Cashier']}><ShiftPage /></RequireRole>} />
           <Route path="tables" element={<TablesPage />} />
           <Route path="orders" element={<RequireRole roles={['Admin', 'Waiter', 'Cashier']}><OrdersPage /></RequireRole>} />
           <Route path="orders/new" element={<RequireRole roles={['Admin', 'Waiter', 'Cashier']}><OrderFormPage /></RequireRole>} />

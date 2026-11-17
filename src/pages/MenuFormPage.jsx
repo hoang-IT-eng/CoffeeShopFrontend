@@ -1,268 +1,299 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
+import { useLang } from '../i18n';
+import OpsIcon from '../components/OpsIcons';
 
-const empty = {
-  name: '',
-  price: '',
-  description: '',
-  imageUrl: '',
-  category: 'Cà phê truyền thống',
-  isAvailable: true,
-  recipes: []
-};
+const PHOTO_PRESETS = [
+  '/img/pos/salted-coffee.jpg',
+  '/img/pos/coldbrew-tonic.jpg',
+  '/img/pos/matcha-latte.jpg',
+  '/img/pos/peach-tea.jpg',
+  '/img/pos/butter-croissant.jpg',
+  '/img/pos/tiramisu.jpg',
+  '/img/pourover.jpg',
+  '/img/phin.jpg'
+];
+
+const CATEGORIES = [
+  'Espresso Bar',
+  'Pour-Over & Filter',
+  'Phin Đặc Sản',
+  'Cold Brew & Tonic',
+  'Matcha & Trà',
+  'Bánh Nướng Xưởng'
+];
 
 export default function MenuFormPage() {
   const { id } = useParams();
+  const isEdit = Boolean(id);
   const navigate = useNavigate();
-  const [form, setForm] = useState(empty);
+  const { t, trData } = useLang();
+
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState('55000');
+  const [category, setCategory] = useState('Espresso Bar');
+  const [imageUrl, setImageUrl] = useState(PHOTO_PRESETS[0]);
+  const [description, setDescription] = useState('');
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [recipes, setRecipes] = useState([]);
   const [ingredients, setIngredients] = useState([]);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!id) {
-      api('/api/menu/ingredients')
-        .then(setIngredients)
+    if (isEdit) {
+      api(`/api/menu/${id}`)
+        .then((res) => {
+          const item = res?.item;
+          if (item) {
+            setName(item.name || '');
+            setPrice(String(item.price || 0));
+            setCategory(item.category || 'Espresso Bar');
+            setImageUrl(item.imageUrl || PHOTO_PRESETS[0]);
+            setDescription(item.description || '');
+            setIsAvailable(item.isAvailable !== false);
+          }
+          setRecipes(
+            (res?.recipes || []).map((r) => ({
+              inventoryItemId: r.inventoryItemId,
+              quantityRequired: r.quantityRequired
+            }))
+          );
+          setIngredients(res?.inventory || []);
+        })
         .catch((err) => setError(err.message));
-      return;
+    } else {
+      api('/api/menu/ingredients')
+        .then((list) => setIngredients(list || []))
+        .catch((err) => setError(err.message));
     }
-    api(`/api/menu/${id}`)
-      .then((data) => {
-        setIngredients(data.inventory || []);
-        setForm({ ...data.item, recipes: data.recipes || [] });
-      })
-      .catch((err) => setError(err.message));
-  }, [id]);
+  }, [id, isEdit]);
 
-  function setField(name, value) {
-    setForm((current) => ({ ...current, [name]: value }));
+  function addRecipeRow() {
+    if (!ingredients.length) return;
+    setRecipes((prev) => [
+      ...prev,
+      { inventoryItemId: ingredients[0].id, quantityRequired: 0.02 }
+    ]);
   }
 
-  function setRecipe(index, field, value) {
-    setForm((current) => ({
-      ...current,
-      recipes: current.recipes.map((recipe, i) =>
-        i === index ? { ...recipe, [field]: value } : recipe
-      )
-    }));
+  function updateRecipeRow(idx, patch) {
+    setRecipes((prev) => prev.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
   }
 
-  function removeRecipe(index) {
-    setForm((current) => ({
-      ...current,
-      recipes: current.recipes.filter((_, i) => i !== index)
-    }));
+  function removeRecipeRow(idx) {
+    setRecipes((prev) => prev.filter((_, i) => i !== idx));
   }
 
-  async function submit(event) {
-    event.preventDefault();
-    const body = {
-      ...form,
-      price: Number(form.price),
-      recipes: (form.recipes || []).map((recipe) => ({
-        inventoryItemId: Number(recipe.inventoryItemId),
-        quantityRequired: Number(recipe.quantityRequired)
-      }))
-    };
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError('');
+    setBusy(true);
     try {
-      if (id) await api(`/api/menu/${id}`, { method: 'PUT', body });
-      else await api('/api/menu', { method: 'POST', body });
+      const payload = {
+        name,
+        price: Number(price || 0),
+        category,
+        imageUrl,
+        description,
+        isAvailable,
+        recipes: recipes.map((r) => ({
+          inventoryItemId: Number(r.inventoryItemId),
+          quantityRequired: Number(r.quantityRequired)
+        }))
+      };
+      if (isEdit) {
+        await api(`/api/menu/${id}`, { method: 'PUT', body: payload });
+      } else {
+        await api('/api/menu', { method: 'POST', body: payload });
+      }
       navigate('/menu');
     } catch (err) {
       setError(err.message);
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
-    <div className="board max-w-4xl mx-auto px-margin-desktop py-space-xl flex flex-col gap-space-lg">
-      <div className="flex items-center justify-between">
+    <div className="ops-page">
+      <header className="ops-header">
         <div>
-          <div className="flex items-center gap-space-xs text-on-surface-variant font-label-sm">
-            <Link to="/menu" className="hover:text-secondary no-underline">
-              Thực Đơn &amp; Định Lượng BOM
-            </Link>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-secondary font-bold">
-              {id ? 'Chỉnh sửa món & BOM' : 'Thêm món mới'}
-            </span>
-          </div>
-          <h1 className="font-headline-lg text-headline-lg text-primary font-bold mt-1">
-            {id ? `Cập Nhật Món: ${form.name}` : 'Thêm Món Mới Vào Thực Đơn'}
-          </h1>
+          <h1>{isEdit ? t('ops.menu.formEditTitle') : t('ops.menu.formNewTitle')}</h1>
         </div>
-        <Link
-          to="/menu"
-          className="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface font-label-md font-bold no-underline"
-        >
-          Quay lại
-        </Link>
-      </div>
 
-      {error && (
-        <div className="p-space-md rounded-xl bg-error-container text-on-error-container">{error}</div>
-      )}
+        <div className="ops-actions">
+          <Link to="/menu" className="ops-btn">
+            <OpsIcon name="arrowLeft" size={15} />
+            <span>{t('ops.menu.backMenu')}</span>
+          </Link>
+        </div>
+      </header>
 
-      <form
-        onSubmit={submit}
-        className="bg-surface-container-lowest rounded-2xl shadow-lg p-space-xl flex flex-col gap-space-lg"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-space-md">
-          <div className="md:col-span-6 flex flex-col gap-1">
-            <label className="font-label-md text-on-surface font-bold">Tên món đồ uống / bánh</label>
+      {error && <div className="ops-alert">{error}</div>}
+
+      <form onSubmit={handleSubmit} className="ops-shift-grid">
+        <div className="ops-panel" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="ops-field">
+            <label htmlFor="menu-name">{t('ops.menu.nameLabel')}</label>
             <input
-              value={form.name}
-              onChange={(e) => setField('name', e.target.value)}
-              placeholder="Vd: Cà Phê Muối Xứ Huế"
-              className="px-space-md py-2.5 rounded-xl bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary"
+              id="menu-name"
+              className="ops-input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </div>
-          <div className="md:col-span-3 flex flex-col gap-1">
-            <label className="font-label-md text-on-surface font-bold">Giá bán (VND)</label>
-            <input
-              type="number"
-              min="1"
-              value={form.price}
-              onChange={(e) => setField('price', e.target.value)}
-              placeholder="35000"
-              className="px-space-md py-2.5 rounded-xl bg-surface-container-low text-on-surface font-mono font-bold focus:outline-none focus:ring-2 focus:ring-secondary"
-              required
-            />
-          </div>
-          <div className="md:col-span-3 flex flex-col gap-1">
-            <label className="font-label-md text-on-surface font-bold">Danh mục</label>
-            <input
-              value={form.category}
-              onChange={(e) => setField('category', e.target.value)}
-              placeholder="Cà phê truyền thống"
-              className="px-space-md py-2.5 rounded-xl bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary"
-            />
-          </div>
-        </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="font-label-md text-on-surface font-bold">
-            Mô tả hương vị &amp; quy chuẩn pha chế
-          </label>
-          <textarea
-            rows={3}
-            value={form.description || ''}
-            onChange={(e) => setField('description', e.target.value)}
-            placeholder="Mô tả chi tiết hương vị và các bước pha chế tiêu chuẩn..."
-            className="px-space-md py-2.5 rounded-xl bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-space-md items-center">
-          <div className="md:col-span-9 flex flex-col gap-1">
-            <label className="font-label-md text-on-surface font-bold">Đường dẫn ảnh (URL)</label>
-            <input
-              value={form.imageUrl || ''}
-              onChange={(e) => setField('imageUrl', e.target.value)}
-              placeholder="https://..."
-              className="px-space-md py-2.5 rounded-xl bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary"
-            />
-          </div>
-          <div className="md:col-span-3 pt-5">
-            <label className="flex items-center gap-2 cursor-pointer font-label-md font-bold text-primary">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="ops-field">
+              <label htmlFor="menu-price">{t('ops.menu.priceLabel')}</label>
               <input
-                type="checkbox"
-                className="w-5 h-5 accent-[#2b1d14]"
-                checked={!!form.isAvailable}
-                onChange={(e) => setField('isAvailable', e.target.checked)}
+                id="menu-price"
+                type="number"
+                min="1000"
+                step="1000"
+                className="ops-input ops-mono"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
               />
-              <span>Mở bán trên POS</span>
-            </label>
+            </div>
+
+            <div className="ops-field">
+              <label htmlFor="menu-cat">{t('ops.menu.categoryLabel')}</label>
+              <select
+                id="menu-cat"
+                className="ops-select"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {trData(c)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
+
+          <div className="ops-field">
+            <label htmlFor="menu-img">{t('ops.menu.imageLabel')}</label>
+            <input
+              id="menu-img"
+              className="ops-input ops-mono"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+            />
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+              {PHOTO_PRESETS.map((src) => (
+                <button
+                  key={src}
+                  type="button"
+                  onClick={() => setImageUrl(src)}
+                  style={{
+                    padding: 2,
+                    borderRadius: 6,
+                    border: imageUrl === src ? '2px solid var(--an-caramel)' : '1px solid var(--an-line)',
+                    background: 'transparent',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <img
+                    src={src}
+                    alt=""
+                    style={{ width: 44, height: 34, objectFit: 'cover', borderRadius: 4, display: 'block' }}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="ops-field">
+            <label htmlFor="menu-desc">{t('ops.menu.descLabel')}</label>
+            <textarea
+              id="menu-desc"
+              rows={3}
+              className="ops-textarea"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={isAvailable}
+              onChange={(e) => setIsAvailable(e.target.checked)}
+              style={{ accentColor: '#2b1d14' }}
+            />
+            <span>{t('ops.menu.availableCheck')}</span>
+          </label>
         </div>
 
-        {/* BOM Recipes */}
-        <div className="p-space-lg rounded-xl bg-surface-container-low flex flex-col gap-space-md">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-headline-sm text-primary font-bold">
-                Định Lượng Nguyên Liệu (BOM)
-              </h2>
-              <p className="font-body-sm text-on-surface-variant">
-                Tự động trừ kho khi đơn hàng hoàn tất tại KDS.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                setField('recipes', [
-                  ...(form.recipes || []),
-                  { inventoryItemId: '', quantityRequired: 0.02 }
-                ])
-              }
-              className="px-space-md py-2 rounded-lg bg-secondary text-on-secondary font-label-sm font-bold flex items-center gap-1"
-            >
-              <span className="material-symbols-outlined text-[16px]">add</span>
-              <span>Thêm nguyên liệu</span>
+        <div className="ops-panel" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="ops-panel-head" style={{ marginBottom: 0 }}>
+            <h2>{t('ops.menu.bomSectionTitle')}</h2>
+            <button type="button" className="ops-btn ops-btn--sm" onClick={addRecipeRow}>
+              <OpsIcon name="plus" size={14} />
+              <span>{t('ops.menu.addIngredient')}</span>
             </button>
           </div>
 
-          <div className="space-y-2">
-            {(form.recipes || []).map((recipe, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-1 md:grid-cols-12 gap-space-sm items-center bg-surface-container-lowest p-space-sm rounded-xl"
-              >
-                <div className="md:col-span-7">
+          {recipes.length === 0 ? (
+            <p style={{ margin: 0, fontSize: 12.5, color: 'var(--an-muted)' }}>
+              {t('ops.menu.bomEmpty')}
+            </p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {recipes.map((row, idx) => (
+                <div
+                  key={idx}
+                  style={{ display: 'grid', gridTemplateColumns: '1fr 110px auto', gap: 8, alignItems: 'center' }}
+                >
                   <select
-                    value={recipe.inventoryItemId}
-                    onChange={(e) => setRecipe(index, 'inventoryItemId', e.target.value)}
-                    className="w-full px-space-md py-2 rounded-lg bg-surface-container-low text-on-surface font-label-md"
+                    className="ops-select"
+                    value={row.inventoryItemId}
+                    onChange={(e) => updateRecipeRow(idx, { inventoryItemId: Number(e.target.value) })}
                   >
-                    <option value="">-- Chọn nguyên liệu trong kho --</option>
-                    {ingredients.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name} {item.unit ? `(${item.unit})` : ''}
+                    {ingredients.map((ing) => (
+                      <option key={ing.id} value={ing.id}>
+                        {trData(ing.name)} ({trData(ing.unit)})
                       </option>
                     ))}
                   </select>
-                </div>
-                <div className="md:col-span-4">
                   <input
                     type="number"
-                    min="0"
                     step="0.001"
-                    value={recipe.quantityRequired}
-                    onChange={(e) => setRecipe(index, 'quantityRequired', e.target.value)}
-                    placeholder="Định lượng"
-                    className="w-full px-space-md py-2 rounded-lg bg-surface-container-low text-on-surface font-mono font-bold"
+                    min="0.001"
+                    className="ops-input ops-mono"
+                    value={row.quantityRequired}
+                    onChange={(e) => updateRecipeRow(idx, { quantityRequired: e.target.value })}
                   />
-                </div>
-                <div className="md:col-span-1 flex justify-end">
                   <button
                     type="button"
-                    onClick={() => removeRecipe(index)}
-                    className="w-9 h-9 rounded-lg bg-error-container text-error flex items-center justify-center"
+                    className="ops-btn ops-btn--danger ops-btn--sm"
+                    onClick={() => removeRecipeRow(idx)}
                   >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                    <OpsIcon name="trash" size={14} />
                   </button>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>
+          )}
 
-        <div className="flex justify-end gap-space-sm">
-          <Link
-            to="/menu"
-            className="px-space-lg py-3 rounded-xl bg-surface-container text-on-surface font-label-md font-bold no-underline"
-          >
-            Hủy
-          </Link>
-          <button
-            type="submit"
-            className="px-space-xl py-3 rounded-xl bg-primary-container text-on-primary font-label-md font-bold shadow-md flex items-center gap-2"
-          >
-            <span className="material-symbols-outlined text-secondary-container text-[18px]">
-              save
-            </span>
-            <span>Lưu Món &amp; Công Thức BOM</span>
-          </button>
+          <div style={{ marginTop: 'auto', paddingTop: 12, borderTop: '1px solid var(--an-line)' }}>
+            <button
+              type="submit"
+              disabled={busy}
+              className="ops-btn ops-btn--espresso"
+              style={{ width: '100%', height: 42 }}
+            >
+              <OpsIcon name="check" size={16} />
+              <span>{t('ops.menu.saveMenu')}</span>
+            </button>
+          </div>
         </div>
       </form>
     </div>
