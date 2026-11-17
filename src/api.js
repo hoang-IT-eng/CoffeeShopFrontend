@@ -1,6 +1,12 @@
+import { mockApi } from './mockApi';
+
 const base = import.meta.env.VITE_API_URL || '';
 
 export async function api(path, { method = 'GET', body } = {}) {
+  // Bản build không cấu hình máy chủ (demo tĩnh) → dùng backend mô phỏng
+  // ngay trong trình duyệt thay vì gọi vào host tĩnh (vốn trả lỗi 405).
+  if (!base) return mockApi(path, { method, body });
+
   const response = await fetch(`${base}${path}`, {
     method,
     credentials: 'include',
