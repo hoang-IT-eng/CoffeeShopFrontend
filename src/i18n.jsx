@@ -1,30 +1,38 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 /**
- * Song ngữ VI/EN cho toàn bộ mặt tiền khách hàng (landing, sản phẩm, văn hóa).
+ * Song ngữ VI/EN cho toàn bộ mặt tiền khách hàng:
+ * Trang chủ, Sản phẩm, Văn hóa cà phê, Giải pháp B2B, Bền vững, Nhật ký.
  * Ngôn ngữ lưu ở localStorage "site-lang", mặc định "vi".
- * t('nav.products') tra theo đường dẫn chấm; giá trị có thể là chuỗi, mảng hoặc object.
  */
 
 const vi = {
-  brand: { tag: 'Cà phê đặc sản & bếp bánh' },
+  brand: { tag: 'Xưởng rang mộc & không gian cà phê' },
   nav: {
-    label: 'Điều hướng trang chủ',
+    label: 'Điều hướng chính',
     home: 'Trang chủ',
-    menu: 'Thực đơn',
-    booking: 'Đặt bàn',
-    story: 'Câu chuyện hạt',
-    sustain: 'Bền vững',
-    space: 'Không gian',
     products: 'Sản phẩm',
     culture: 'Văn hóa cà phê',
+    business: 'Giải pháp B2B',
+    sustain: 'Bền vững',
+    journal: 'Nhật ký',
+    quiz: 'Tìm gu cà phê',
+    menu: 'Thực đơn quầy',
+    booking: 'Đặt bàn',
+    story: 'Câu chuyện hạt',
+    space: 'Không gian',
     admin: 'Quản trị / POS',
-    hotline: 'Hotline',
-    orderNow: 'Gọi món'
+    hotline: 'Đặt bàn & Sỉ',
+    orderNow: 'Gọi món',
+    menuOpen: 'Mục lục',
+    menuClose: 'Đóng',
+    drawerHouse: 'Ngôi nhà An Roastery',
+    drawerExplore: 'Chuyên mục',
+    drawerVisit: 'Ghé quán & Vận hành'
   },
   switcher: { label: 'Chọn ngôn ngữ' },
   story: {
-    cue: 'Cuộn xuống để xem hạt đi từ đồi tới tách',
+    cue: 'Cuộn xuống để theo hạt đi từ đồi tới tách',
     viewMenu: 'Xem thực đơn',
     book: 'Đặt bàn',
     railLabel: 'Các chặng trong hành trình',
@@ -80,6 +88,44 @@ const vi = {
     }
   },
   home: {
+    catalog: {
+      head: 'Tủ hạt và đồ pha mang về nhà',
+      sub: 'Chọn dòng sản phẩm bạn dùng mỗi sáng — hạt chỉ đóng gói khi vừa nghỉ đủ ngày sau rang.',
+      viewAll: 'Mở toàn bộ cửa hàng (15 món)',
+      roastLabel: 'Độ rang',
+      intensityLabel: 'Độ đậm',
+      acidityLabel: 'Độ thanh',
+      brewLabel: 'Gợi ý pha',
+      selectAria: 'Xem chi tiết {name}'
+    },
+    cycle: {
+      head: 'Chu trình của một tách tử tế',
+      sub: 'Bắt đầu từ đất đồi, thành hình trong lồng gang, cân bằng nhờ phối trộn và hoàn tất trên bàn thử nếm.',
+      cta: 'Đọc sâu hơn ở trang Văn hóa cà phê'
+    },
+    quiz: {
+      head: 'Đâu là hồ sơ vị giác hợp với bạn?',
+      sub: 'Ba câu hỏi ngắn từ bàn thử nếm của quán để chọn đúng túi hạt pha tại nhà và món nước nên gọi khi ghé quầy.',
+      resultHeading: 'Gợi ý dành cho bạn',
+      homeBagLabel: 'Mang về nhà',
+      barDrinkLabel: 'Gọi tại quầy bar',
+      brewGuideLabel: 'Thông số pha chuẩn',
+      resetBtn: 'Chọn lại từ đầu',
+      shopCta: 'Xem trên kệ Sản phẩm'
+    },
+    journalPreview: {
+      head: 'Ghi chép từ xưởng rang & đồi cà phê',
+      sub: 'Chuyện mùa vụ, thử nghiệm cỡ xay và những người làm ra hạt cà phê bạn uống mỗi ngày.',
+      allLink: 'Đọc tất cả bài viết',
+      readLink: 'Đọc bài ghi chép'
+    },
+    b2bBanner: {
+      head: 'Giải pháp cà phê cho quán, nhà hàng & văn phòng',
+      body: 'Cung ứng hạt rang theo tuần trong thùng hoàn trả 5 kg, lắp đặt máy pha chuyên nghiệp và huấn luyện barista định kỳ.',
+      cta: 'Khám phá giải pháp B2B',
+      statA: 'Từ 10 kg/tháng',
+      statB: 'Hỗ trợ kỹ thuật 7 ngày'
+    },
     pillars: {
       head: 'Ba việc chúng tôi làm mỗi ngày',
       sub: 'Gọi món nhanh, pha chế trước mặt bạn, bánh nướng ra lò hai lần mỗi ngày.',
@@ -102,7 +148,7 @@ const vi = {
       ]
     },
     menu: {
-      head: 'Signature đang bán chạy',
+      head: 'Signature đang bán chạy tại quầy',
       link: 'Đặt bàn để thưởng thức tại quán',
       addAria: 'Thêm {name}',
       items: [
@@ -152,9 +198,10 @@ const vi = {
       titleEm: 'đến',
       titleB: 'tách cà phê trên tay bạn',
       sub: 'Bền vững ở An Roastery không phải khẩu hiệu treo tường. Đó là cách quán mua hạt, cách vườn được chăm và cách mỗi ca phục vụ dùng vừa đủ nguyên liệu.',
+      fullReportLink: 'Xem báo cáo Bền vững & các lô hạt hiếm',
       statsAria: 'Con số bền vững',
       stats: [
-        { value: 42, suffix: '', label: 'hộ nông liên kết tại Cầu Đất & Bảo Lộc' },
+        { value: 42, suffix: '', label: 'hộ nông liên kết tại Cầu Đất, Bảo Lộc & Sơn La' },
         { value: 1650, suffix: ' m', label: 'độ cao trung bình của vườn cà phê' },
         { value: 92, suffix: '%', label: 'quả được hái chín đỏ hoàn toàn bằng tay' },
         { value: 14, suffix: '', label: 'ngày tối đa từ mẻ rang đến lúc lên quầy' }
@@ -194,12 +241,12 @@ const vi = {
       ]
     },
     book: {
-      head: 'Đặt bàn và workshop cà phê',
-      sub: 'Giữ chỗ làm việc yên tĩnh, góc ban công, hoặc đăng ký cupping cùng master roaster sáng thứ Bảy.',
+      head: 'Đặt bàn và buổi thử nếm cuối tuần',
+      sub: 'Giữ chỗ làm việc yên tĩnh, góc ban công, hoặc đăng ký cupping cùng thợ rang sáng thứ Bảy.',
       perks: [
         'Giữ chỗ trước đến 30 phút, không phụ phí',
-        'Ổ cắm, bàn làm việc và wifi ổn định',
-        'Một cookie bơ Pháp khi đặt trước online'
+        'Ổ cắm, bàn làm việc dài và wifi ổn định',
+        'Tặng một bánh cookie bơ Pháp khi đặt trước online'
       ],
       branch: 'Chi nhánh',
       date: 'Ngày',
@@ -211,7 +258,7 @@ const vi = {
       namePlaceholder: 'Nguyễn Văn An',
       phonePlaceholder: '0901 234 567',
       guestsOptions: ['1 người', '2 người', '3 – 5 người', '6 – 12 người'],
-      areaOptions: ['Sảnh yên tĩnh', 'Ban công ngoài trời', 'Gần quầy bar', 'Bàn làm việc có ổ cắm'],
+      areaOptions: ['Sảnh yên tĩnh', 'Ban công ngoài trời', 'Quầy bar mở / Cupping', 'Bàn làm việc có ổ cắm'],
       submit: 'Giữ bàn miễn phí',
       success: 'Đã ghi nhận. Quán sẽ gọi xác nhận trong vài phút.'
     },
@@ -224,128 +271,230 @@ const vi = {
         { caption: 'Ban công ngoài trời', alt: 'Ban công ngoài trời dưới tán cây' }
       ],
       quote: '“Cà phê muối rang mộc thật, không gắt dầu. QR Order tại bàn chạy mượt — đặt xong là pha.”',
-      quoteBy: 'Hoàng Minh Quân · khách thường xuyên chi nhánh Tân Bình'
+      quoteBy: 'Hoàng Minh Quân · khách quen chi nhánh Tân Bình'
     },
     staff: {
-      label: 'Dành cho nhân viên và quản trị An Roastery',
-      links: ['POS thu ngân', 'KDS bếp', 'Dashboard', 'Waiter app']
+      label: 'Dành cho nhân viên vận hành ca trực An Roastery',
+      links: ['POS thu ngân', 'KDS bếp', 'Dashboard', 'Sơ đồ bàn']
     }
   },
   footer: {
-    tagline: 'Rang mộc chuẩn SCA, pha chế thủ công và không gian thưởng thức giữa đô thị.',
+    tagline: 'Rang mộc chuẩn SCA, pha chế thủ công và không gian thưởng thức tĩnh tại giữa đô thị.',
+    exploreTitle: 'Chuyên mục',
     hoursTitle: 'Giờ mở cửa',
     hours: [
       { label: 'Thứ 2 – Thứ 6', value: '06:30 – 22:30' },
       { label: 'Thứ 7 – Chủ nhật', value: '07:00 – 23:00' },
-      { label: 'Kitchen / brunch', value: '07:30 – 14:00' }
+      { label: 'Cupping mở cửa', value: '09:30 Thứ Bảy' }
     ],
-    branchesTitle: 'Chi nhánh',
+    branchesTitle: 'Chi nhánh & Xưởng',
     contactTitle: 'Liên hệ',
     bookingLine: 'Đặt bàn: 1900 6886',
+    b2bLine: 'Đối tác hạt sỉ: b2b@anroastery.vn',
     emailLine: 'Email: hello@anroastery.vn',
     privacy: 'Chính sách bảo mật',
     terms: 'Điều khoản'
   },
   products: {
-    kicker: 'Cửa hàng An Roastery',
-    title: 'Mang hương vị quán về nhà',
-    lede: 'Hạt rang mẻ nhỏ tại xưởng, đồ pha sẵn đóng chai mỗi sáng và dụng cụ pha chế mà chính barista của quán đang dùng mỗi ngày. Rang theo đơn — hạt chỉ vào lồng khi bạn đặt.',
-    all: 'Tất cả',
-    add: 'Thêm vào giỏ',
+    meta: 'Xưởng rang Tân Bình · Giao hàng toàn quốc',
+    title: 'Cà phê tại nhà, đóng gói từ mẻ rang trong tuần',
+    lede: 'Mười lăm dòng hạt nguyên chất, rang xay đúng cỡ phễu, phin giấy đóng khí nitơ, chai ủ lạnh mỗi sáng và bộ dụng cụ gốm – inox mà barista của quán tin dùng.',
+    all: 'Tất cả dòng',
+    subfilterLabel: 'Lọc theo vùng hạt:',
+    subfilters: {
+      all: 'Mọi vùng trồng',
+      'cau-dat': 'Cầu Đất · 1.650 m',
+      highlands: 'Bảo Lộc & Tây Nguyên',
+      'son-la': 'Sơn La Tây Bắc',
+      blend: 'Phối trộn tại xưởng'
+    },
+    add: 'Chọn mua',
     added: 'Đã thêm',
     addAria: 'Thêm {name} vào giỏ',
-    note: 'Đơn từ 300.000đ được miễn phí giao tại TP.HCM và Hà Nội. Hạt nguyên chất và rang xay luôn kèm ngày rang in trên bao bì.',
+    inspect: 'Thông số pha',
+    hideInspect: 'Thu gọn',
+    roast: 'Độ rang',
+    intensity: 'Độ đậm',
+    acidity: 'Độ thanh',
+    body: 'Thể chất',
+    bagSummary: '{count} món trong giỏ tạm · {total}',
+    bagClear: 'Xóa chọn',
+    bagCheckoutNote: 'Gọi 1900 6886 hoặc ghé quầy nhận ngay trong 2 giờ',
+    note: 'Miễn phí giao nội thành TP.HCM và Hà Nội cho đơn từ 300.000₫. Mọi túi hạt đều in rõ ngày rang, mã lô và tên vùng nguyên liệu.',
+    quizPromptTitle: 'Chưa chắc mình hợp hạt Cầu Đất thanh nhẹ hay Bảo Lộc đậm mộc?',
+    quizPromptCta: 'Làm bài trắc nghiệm gu vị 30 giây',
     categories: {
-      bean: { label: 'Hạt nguyên chất', blurb: 'Nguyên hạt, rang mẻ nhỏ, nghỉ đủ ngày trước khi đóng gói.' },
-      ground: { label: 'Rang xay', blurb: 'Xay theo đúng dụng cụ bạn dùng ở nhà — phin, espresso hay pour-over.' },
-      rtd: { label: 'Pha sẵn', blurb: 'Đóng chai lạnh mỗi sáng tại quầy, giữ lạnh và dùng trong 5 ngày.' },
-      gear: { label: 'Dụng cụ pha chế', blurb: 'Những món đồ bền, dễ dùng mà đội ngũ An Roastery tin tưởng.' }
+      bean: { label: 'Nguyên hạt', blurb: 'Dành cho bạn có cối xay ở nhà — giữ trọn tinh dầu đến phút cuối trước khi pha.' },
+      ground: { label: 'Rang xay', blurb: 'Xay bằng đĩa phẳng tốc độ thấp theo đúng cỡ phin, ấm Moka hoặc phễu giấy.' },
+      drip: { label: 'Phin giấy', blurb: 'Túi lọc 12–14 g thổi khí nitơ giữ hương, gác lên miệng ly pha ngay tại bàn làm việc.' },
+      rtd: { label: 'Đóng chai lạnh', blurb: 'Ủ lạnh và đóng chai thủy tinh mỗi sáng tại quầy bar, hoàn 5.000₫ khi trả vỏ.' },
+      gear: { label: 'Dụng cụ pha', blurb: 'Phin inox dày, phễu sứ nung cao lửa và tách men tro làm tay tại làng gốm.' }
     }
   },
   culture: {
-    kicker: 'Tạp chí An Roastery',
-    title: 'Văn hóa cà phê',
-    lede: 'Từ cao nguyên Ethiopia đến ly phin chậm rãi trên vỉa hè Sài Gòn — cà phê chưa bao giờ chỉ là một thức uống. Đây là nơi quán ghi lại những câu chuyện, nghi thức và kỹ thuật làm nên một tách cà phê tử tế.',
-    chaptersLabel: 'Các chương',
+    meta: 'Chuyên khảo & Cẩm nang pha chế',
+    title: 'Văn hóa của sự chậm rãi trong từng giọt cà phê',
+    lede: 'Từ rừng cà phê hoang dã Kaffa đến chiếc phin nhôm gõ khẽ trên mặt bàn gỗ Sài Gòn — cà phê sống được lâu đến thế vì xung quanh nó luôn có con người, nghi thức và nghề thủ công.',
+    nav: {
+      cycle: 'Chu trình 4 bước',
+      origins: 'Dòng lịch sử',
+      phin: 'Nghi thức phin',
+      lab: 'Phòng Lab & Học viện',
+      guides: 'Công thức tại nhà'
+    },
     origins: {
-      index: 'Chương 01',
       title: 'Khởi nguồn: hạt cà phê đi nửa vòng trái đất',
       body: [
-        'Truyền thuyết kể rằng vào thế kỷ 9, người chăn dê Kaldi ở vùng Kaffa (Ethiopia) nhận ra đàn dê của mình tỉnh táo lạ thường sau khi ăn quả đỏ của một loài cây lạ. Dù đúng hay không, Kaffa vẫn được xem là quê hương của cây cà phê arabica — nơi những hạt đầu tiên được rang, giã và pha như một thứ nước tăng lực cho những đêm cầu nguyện dài.',
-        'Từ Ethiopia, cà phê theo chân thương nhân qua Yemen, trở thành thức uống của các quán qahveh khaneh ở Mecca và Istanbul, rồi cập bến Venice và lan khắp châu Âu. Mỗi nơi nó dừng chân, cà phê lại khoác một hình hài mới: espresso chớp nhoáng của Ý, café crème thong thả của Pháp — và sau này là phin nhỏ giọt của Việt Nam.'
+        'Truyền thuyết kể rằng vào thế kỷ 9, người chăn dê Kaldi ở vùng Kaffa (Ethiopia) nhận ra đàn dê của mình tỉnh táo lạ thường sau khi ăn quả đỏ của một loài cây bụi trên núi. Từ cao nguyên Đông Phi ấy, hạt cà phê theo thuyền buôn qua cảng Mocha của Yemen, bước vào những quán qahveh khaneh ở Istanbul rồi lan khắp Venice, Paris và Vienna.',
+        'Năm 1857, những cây Arabica đầu tiên đặt chân đến Việt Nam, trước khi tìm thấy thổ nhưỡng lý tưởng trên sườn núi đá đỏ Tây Nguyên và dải mây mù Cầu Đất. Hơn một thế kỷ rưỡi sau, người Việt đã tạo nên một ngôn ngữ cà phê hoàn toàn riêng biệt: đậm sánh, hồn hậu và không bao giờ uống vội.'
       ]
     },
-    timelineTitle: 'Dòng thời gian của một hạt',
+    timelineTitle: 'Bảy cột mốc định hình tách cà phê hôm nay',
     timeline: [
-      { year: 'Thế kỷ 9', title: 'Kaffa, Ethiopia', body: 'Cây cà phê arabica mọc hoang trên cao nguyên; hạt được dùng như thức ăn tăng lực trước khi trở thành đồ uống.' },
-      { year: 'Thế kỷ 15', title: 'Yemen & thế giới Hồi giáo', body: 'Cảng Mocha đưa cà phê ra thương mại. Quán cà phê đầu tiên xuất hiện — nơi người ta bàn chuyện, nghe nhạc và chơi cờ.' },
-      { year: 'Thế kỷ 17', title: 'Châu Âu đón nhận', body: 'Từ Venice đến London và Paris, quán cà phê trở thành "trường học của những người khôn" — cái nôi của báo chí và khởi nghiệp.' },
-      { year: '1857', title: 'Cà phê đến Việt Nam', body: 'Người Pháp đưa những cây arabica đầu tiên vào trồng tại miền Bắc, mở đầu hành trình hơn 165 năm của cà phê Việt.' },
-      { year: 'Đầu thế kỷ 20', title: 'Phin ra đời trên đất Việt', body: 'Chiếc phin lọc kim loại nhỏ gọn trở thành biểu tượng: rẻ, bền và cho ra thứ cà phê đậm sánh đúng khẩu vị người Việt.' },
-      { year: 'Thập niên 1980', title: 'Robusta phủ xanh Tây Nguyên', body: 'Đắk Lắk, Lâm Đồng trở thành thủ phủ robusta, đưa Việt Nam lên nhóm xuất khẩu cà phê lớn nhất thế giới.' },
-      { year: 'Hôm nay', title: 'Làn sóng specialty', body: 'Một thế hệ nông hộ và thợ rang Việt Nam quay lại với chất lượng: hái chín, sơ chế tỉ mỉ, rang mẻ nhỏ — như cách An Roastery đang làm mỗi ngày.' }
+      { year: 'Thế kỷ 9', title: 'Cao nguyên Kaffa, Ethiopia', body: 'Cây Arabica mọc tự nhiên dưới tán rừng già; quả chín được giã cùng bơ làm lương khô cho những chuyến đi xa.' },
+      { year: 'Thế kỷ 15', title: 'Cảng Mocha & Yemen', body: 'Kỹ thuật rang hạt trên chảo gang và pha nước sôi ra đời, mở màn cho văn hóa quán cà phê trò chuyện.' },
+      { year: 'Thế kỷ 17', title: 'Venice, London & Paris', body: 'Quán cà phê châu Âu trở thành nơi gặp gỡ của nhà văn, thương buôn và những tờ báo in đầu tiên.' },
+      { year: '1857', title: 'Cây giống đầu tiên tại Việt Nam', body: 'Những vườn cà phê thử nghiệm ở miền Bắc và Bắc Trung Bộ đặt nền móng cho hơn 165 năm canh tác.' },
+      { year: '1920s', title: 'Đất đỏ Cầu Đất & Tây Nguyên', body: 'Độ cao 1.500 m của Đà Lạt cho ra hạt Bourbon thơm ngát, trong khi Buôn Ma Thuột và Bảo Lộc trù phú giống Robusta.' },
+      { year: '1940s', title: 'Sữa đá Sài Gòn & Cà phê trứng Hà Nội', body: 'Từ chiếc phin nhỏ giọt, người Việt sáng tạo nên hai biểu tượng ẩm thực đường phố được cả thế giới nhắc tên.' },
+      { year: 'Hiện tại', title: 'Thế hệ rang mộc & Specialty Việt', body: 'Nông hộ và xưởng rang trẻ quay về giá trị cốt lõi: hái chín 100%, lên men sạch và minh bạch từng lô hạt.' }
     ],
     phin: {
-      index: 'Chương 02',
-      title: 'Nghi thức phin: nghệ thuật của sự chậm rãi',
+      title: 'Nghi thức phin & hai di sản trong chiếc ly thủy tinh',
       body: [
-        'Phin không vội được. Nước sôi rót thành vòng tròn, bột nở bung như thở, rồi từng giọt rơi xuống lớp sữa đặc — khoảng năm phút cho một ly. Người Việt biến khoảng chờ ấy thành một nghi thức: ngắm phố, đọc báo, chờ đá tan. Chậm ở đây không phải thiếu sót; chậm chính là hương vị.',
-        'Một phin ngon bắt đầu từ hạt robusta rang mộc xay vừa, lượng bột khoảng 25 gram cho phin 170 ml, nước 96°C và một lần "ủ nở" 30 giây trước khi rót đầy. Tại An Roastery, phin vẫn là món được gọi nhiều nhất mỗi sáng — dù quán có đủ máy móc hiện đại hơn nhiều.'
+        'Phin không dung thứ cho sự hấp tấp. Nước sôi 96°C tưới vừa đủ ủ bột nở đều trong ba mươi giây, rồi từng giọt nâu sẫm rơi đều nhịp xuống lớp sữa đặc. Khoảng năm phút chờ đợi ấy là lúc người ta gác điện thoại xuống và nhìn ra hàng cây trước hiên.',
+        'Từ nền cà phê phin đậm đà ấy, Sài Gòn có ly bạc xỉu và cà phê sữa đá mát lạnh giữa trưa nắng, còn Hà Nội mùa thu giữ ấm bàn tay bằng chén cà phê trứng đánh bông mịn như kem sabayon.'
       ],
-      imgAlt: 'Phin cà phê đang nhỏ giọt xuống ly sữa đặc',
-      imgCaption: 'Phin 170 ml, 25 g bột, 5 phút chờ — công thức không đổi của quán.'
+      imgAlt: 'Phin cà phê inox đang nhỏ giọt chậm rãi',
+      imgCaption: 'Phin 170 ml, 25 g bột rang mộc, 5 phút 15 giây nhỏ giọt tự trọng.',
+      eggCaption: 'Cà phê trứng đánh bông cùng mật ong, đặt trong chén nước nóng giữ nhiệt.'
     },
-    heritage: {
-      index: 'Chương 03',
-      title: 'Di sản trong ly: cà phê sữa đá & cà phê trứng',
-      subA: 'Cà phê sữa đá',
-      bodyA: 'Sữa đặc có đường đến Việt Nam từ thời sữa tươi còn là xa xỉ phẩm, và người Việt đã biến nó thành linh hồn của ly cà phê đá: đậm, ngọt, mát lạnh. Khuấy đều, chờ đá tan dần làm dịu vị gắt — ly cà phê thay đổi hương vị theo từng ngụm, như một câu chuyện có hồi kết chậm rãi.',
-      subB: 'Cà phê trứng',
-      bodyB: 'Sinh ra ở Hà Nội những năm 1940 khi sữa tươi khan hiếm, cà phê trứng đánh bông lòng đỏ với sữa đặc thành lớp kem vàng mịn phủ trên nền cà phê nóng. Nó là minh chứng đẹp nhất cho triết lý bếp Việt: thiếu thốn không ngăn được sáng tạo, và sự khéo léo có thể biến giới hạn thành di sản.',
-      imgAlt: 'Ly cà phê trứng với lớp kem vàng mịn',
-      imgCaption: 'Cà phê trứng — lớp kem lòng đỏ đánh bông, phục vụ trong chén nước ấm giữ nhiệt.'
+    lab: {
+      title: 'Phòng thử nếm & Lớp học Barista cuối tuần',
+      lede: 'Lấy cảm hứng từ các trung tâm khoa học cà phê châu Âu nhưng gần gũi như một gian bếp mở: nơi khách uống, người trồng và thợ rang ngồi chung một bàn.',
+      leftTitle: 'Phòng Lab Kiểm Định & Rang Mẫu',
+      leftBody: 'Trang bị máy rang mẫu Ikawa 100g, máy đo màu Agtron và khúc xạ kế đo chiết xuất TDS. Mỗi lô nhân xanh từ nông trại đều được rang thử ba cấu hình nhiệt trước khi chốt lịch rang mẻ lớn.',
+      leftMeta: 'Kiểm định 100% lô nguyên liệu đầu vào',
+      rightTitle: 'Lớp Cupping & Pha Thủ Công Sáng Thứ Bảy',
+      rightBody: 'Mỗi sáng thứ Bảy lúc 09:30 tại chi nhánh Quận 3 (tối đa 8 người/buổi), barista hướng dẫn nếm phân biệt 4 vùng trồng Việt Nam và thực hành căn chỉnh dòng nước V60 cũng như phin truyền thống.',
+      rightMeta: 'Miễn phí cho khách đặt chỗ trước',
+      bookCta: 'Đăng ký chỗ ngồi sáng thứ Bảy'
     },
     guides: {
-      index: 'Chương 04',
-      title: 'Cẩm nang pha tại nhà',
-      sub: 'Ba công thức nền tảng mà barista của quán dùng để huấn luyện nhân viên mới. Nắm vững tỉ lệ, phần còn lại là khẩu vị của riêng bạn.',
+      title: 'Ba công thức nền tảng để pha ngon tại nhà',
+      sub: 'Tỉ lệ chuẩn mà quầy bar dùng để huấn luyện nhân sự mới. Hãy bắt đầu từ đây rồi gia giảm theo gu đậm nhạt của riêng bạn.',
+      ratioLabel: 'Định lượng',
+      tempLabel: 'Nhiệt nước',
+      timeLabel: 'Tổng thời gian',
       items: [
-        { name: 'Phin truyền thống', ratio: '25 g cà phê · 100 ml nước', temp: '96°C', time: '5 – 7 phút', body: 'Ủ nở 30 giây với 20 ml nước, nén nhẹ nắp gài, rót phần còn lại và chờ giọt cuối rơi hết trước khi khuấy với sữa đặc.' },
-        { name: 'Pour-over V60', ratio: '15 g cà phê · 250 ml nước', temp: '92°C', time: 'khoảng 3 phút', body: 'Xay trung bình, rót nở 45 giây, sau đó rót xoáy đều tay. Vị sáng, rõ nốt hoa quả — hợp với arabica Cầu Đất sơ chế honey.' },
-        { name: 'Cold brew ngâm lạnh', ratio: 'Tỉ lệ 1:10 · xay thô', temp: 'Nước lạnh / nhiệt độ phòng', time: '18 – 24 giờ', body: 'Ngâm trong bình kín, lọc qua giấy, bảo quản lạnh tối đa 5 ngày. Uống nguyên chất với đá hoặc thêm một lát cam vàng như món signature của quán.' }
-      ],
-      ratioLabel: 'Tỉ lệ',
-      tempLabel: 'Nhiệt độ',
-      timeLabel: 'Thời gian'
-    },
-    sustain: {
-      index: 'Chương 05',
-      title: 'Uống tử tế với đất và người trồng',
-      body: 'Mỗi tách cà phê ngon đều bắt đầu từ một vườn khỏe và một nông hộ được trả công xứng đáng. Cách An Roastery mua hạt, sơ chế và giảm lãng phí tại quầy được kể chi tiết trong chương Bền vững ở trang chủ.',
-      cta: 'Đọc chương Bền vững'
+        { name: 'Phin truyền thống', ratio: '25 g cà phê : 95 ml nước', temp: '95 – 96°C', time: '5 – 6 phút', body: 'Tráng nóng phin. Cho bột vào lắc phẳng, ủ nở 20 ml nước trong 30 giây, đặt tấm chặn tự trọng rồi rót nhẹ 75 ml còn lại.' },
+        { name: 'Pour-over V60', ratio: '15 g cà phê : 240 ml nước', temp: '91 – 93°C', time: '2 phút 45 giây', body: 'Xay cỡ muối biển. Rót nở 45 g nước trong 40 giây, sau đó chia làm hai lần rót xoáy đồng tâm từ tâm ra rìa mà không dội trực tiếp lên giấy.' },
+        { name: 'Cold Brew ủ lạnh', ratio: '50 g cà phê : 500 ml nước mát', temp: '4°C trong tủ mát', time: '20 – 24 giờ', body: 'Xay thô cỡ tiêu vỡ, ngâm kín trong bình thủy tinh ở ngăn mát tủ lạnh rồi lọc qua giấy V60 để thu được bình cà phê trong, ngọt hậu suốt 5 ngày.' }
+      ]
     },
     closing: {
-      quote: '“Cà phê là cái cớ đẹp nhất để con người ngồi lại với nhau lâu hơn một chút.”',
-      by: '— Đội ngũ An Roastery'
+      quote: '“Cà phê ngon không làm ngày dài thêm, nhưng làm mười lăm phút buổi sáng trở nên đáng nhớ.”',
+      by: '— Xưởng rang An Roastery',
+      shopCta: 'Chọn hạt về tự tay pha'
     }
+  },
+  business: {
+    meta: 'Cung ứng hạt rang mộc, thiết bị & đào tạo vận hành',
+    title: 'Đồng hành cùng quán cà phê, nhà hàng và văn phòng tử tế',
+    lede: 'Từ quán nhỏ 25 ghế đến sảnh khách sạn hay văn phòng 200 nhân sự: chúng tôi thiết kế hồ sơ rang riêng, lắp đặt hệ máy pha bền bỉ và chăm sóc kỹ thuật định kỳ để mỗi tách phục vụ đều giữ đúng chuẩn.',
+    ctaPrimary: 'Nhận bộ mẫu thử 4 loại hạt',
+    ctaSecondary: 'Gọi bộ phận sỉ: 1900 6886',
+    linesHead: 'Bốn dòng nguyên liệu cung ứng theo tuần',
+    linesSub: 'Chọn mô hình vận hành để xem quy cách đóng gói, định mức ly và lịch giao hạt tươi.',
+    machinesHead: 'Hệ máy pha và cối xay chuyên nghiệp',
+    machinesSub: 'Thiết bị được kiểm chứng thực tế qua hàng vạn ly tại chính chuỗi quầy bar của An Roastery.',
+    machineFilterAll: 'Tất cả cấu hình',
+    servicesHead: 'Bốn cam kết kỹ thuật đi kèm mỗi hợp đồng hạt',
+    services: [
+      { num: '01', title: 'Rang theo lịch đặt hàng đầu tuần', body: 'Không giao hàng tồn kho lâu ngày. Hạt được rang thứ Sáu, nghỉ degassing cuối tuần và giao sáng thứ Hai.' },
+      { num: '02', title: 'Huấn luyện barista & chuẩn hóa công thức', body: 'Đào tạo trực tiếp tại quầy của đối tác: chỉnh cối xay theo độ ẩm trời mưa/nắng, đánh sữa mịn và vệ sinh họng pha.' },
+      { num: '03', title: 'Kỹ thuật viên có mặt trong 4 giờ', body: 'Đội bảo trì nội thành TP.HCM và Hà Nội xử lý sự cố áp suất, rò gioăng hoặc cho mượn cối xay dự phòng ngay trong ca.' },
+      { num: '04', title: 'Kiểm soát chất lượng nước pha', body: 'Đo độ cứng và TDS nguồn nước miễn phí trước khi lắp máy, tư vấn lõi lọc chống đóng cặn nồi hơi.' }
+    ],
+    formHead: 'Yêu cầu báo giá sỉ & hộp mẫu thử miễn phí',
+    formSub: 'Để lại thông tin mô hình của bạn — chuyên viên rang và thiết bị sẽ liên hệ trong giờ làm việc cùng ngày.',
+    fields: {
+      company: 'Tên quán / doanh nghiệp',
+      companyPh: 'Ví dụ: Tiệm Cà Phê Mùa Thu / Công ty ABC',
+      contact: 'Người liên hệ',
+      contactPh: 'Trần Minh Khôi',
+      phone: 'Số điện thoại',
+      phonePh: '0903 456 789',
+      segment: 'Mô hình hoạt động',
+      segments: ['Quán cà phê độc lập', 'Nhà hàng / Khách sạn', 'Văn phòng doanh nghiệp', 'Chuỗi cửa hàng / Đại lý'],
+      volume: 'Sản lượng dự kiến mỗi tháng',
+      volumes: ['10 – 25 kg / tháng', '25 – 60 kg / tháng', 'Trên 60 kg / tháng', 'Cần tư vấn trọn gói máy + hạt'],
+      notes: 'Ghi chú thêm về máy đang dùng hoặc gu vị mong muốn',
+      notesPh: 'Ví dụ: Đang dùng máy 2 group, khách chuộng gu đậm vừa pha sữa tươi...',
+      submit: 'Gửi yêu cầu nhận mẫu thử',
+      success: 'Đã tiếp nhận yêu cầu. Bộ phận Giải pháp B2B sẽ gọi xác nhận địa chỉ gửi hộp mẫu trong hôm nay.'
+    }
+  },
+  sustainabilityPage: {
+    meta: 'Tác động tích cực từ nông trại tới sau quầy pha',
+    title: 'Canh tác bền vững được nuôi dưỡng bằng giá mua công bằng',
+    lede: 'Chúng tôi tin rằng không thể có cà phê bền vững nếu người trồng phải bán dưới giá thành chăm sóc. Mọi cam kết môi trường của An Roastery bắt đầu từ hợp đồng bao tiêu trực tiếp và khép lại ở vòng tuần hoàn phụ phẩm tại quán.',
+    pillarsHead: 'Ba trụ cột vận hành xuyên suốt',
+    microHead: 'Các lô hạt vi mô (Micro-lots) gìn giữ giống bản địa',
+    microSub: 'Những mảnh vườn nhỏ dưới 2 héc-ta canh tác xen canh tự nhiên, được thu mua tách bạch từng bao để tôn vinh tên người trồng.',
+    tastingLabel: 'Bốn tầng hương vị ghi nhận trên bàn thử nếm',
+    circularHead: 'Kinh tế tuần hoàn: không có gì bị bỏ đi vô ích',
+    circularSub: 'Từ vỏ lụa trong lồng rang đến bã espresso cuối ngày — mỗi phụ phẩm đều bước sang một vòng đời mới.',
+    roadmapHead: 'Lộ trình thích ứng khí hậu & giảm phát thải 2020 – 2028',
+    roadmap: [
+      { period: '2020 – 2022', phase: 'Giai đoạn I', title: 'Mua trực tiếp & bỏ qua thương lái trung gian', body: 'Thiết lập mạng lưới 18 hộ nông đầu tiên tại Cầu Đất và Bảo Lộc với mức thưởng cố định +22% cho quả hái chín đỏ trên 90%.' },
+      { period: '2022 – 2024', phase: 'Giai đoạn II', title: 'Tán cây che bóng & ủ phân vỏ cà phê', body: 'Trồng xen hơn 1.400 cây hồng, mắc-ca và muồng đen giữ ẩm đất đồi, giảm một nửa lượng phân bón hóa học đầu vào.' },
+      { period: '2024 – 2026', phase: 'Giai đoạn III', title: 'Tuần hoàn bã pha & thùng giao hạt không rác nhựa', body: '100% bã cà phê tại 3 chi nhánh chuyển về trại nấm; đưa vào vận hành thùng inox 5 kg hoàn trả cho các quán đối tác.' },
+      { period: '2026 – 2028', phase: 'Giai đoạn IV · Đang triển khai', title: 'Bảo tồn giống chịu hạn & điện mặt trời tại xưởng', body: 'Nhân giống thử nghiệm Liberica (cà phê mít) rễ cọc chịu khô hạn và chuyển đổi 60% điện năng xưởng rang sang áp mái.' }
+    ]
+  },
+  journal: {
+    meta: 'Con người, mùa vụ, kỹ thuật & chuyện quanh tách cà phê',
+    title: 'Nhật ký từ xưởng rang và những triền đồi',
+    lede: 'Nơi đội ngũ thợ rang, barista và nông hộ ghi lại những thử nghiệm thành công lẫn thất bại trên hành trình làm ra tách cà phê mộc mạc.',
+    categories: {
+      all: 'Tất cả bài viết',
+      harvest: 'Mùa vụ & Vùng trồng',
+      craft: 'Kỹ thuật rang & pha',
+      community: 'Cộng đồng',
+      press: 'Tin từ xưởng'
+    },
+    leadBadge: 'Bài tiêu điểm',
+    readArticle: 'Đọc toàn văn',
+    closeArticle: 'Đóng bài đọc',
+    ledgerHead: 'Sổ tin tức & cập nhật ngắn',
+    storiesHead: 'Ghi chép thực địa & phòng lab'
   }
 };
 
 const en = {
-  brand: { tag: 'Specialty coffee & kitchen' },
+  brand: { tag: 'Clean-roast coffee house & roastery' },
   nav: {
-    label: 'Site navigation',
+    label: 'Primary navigation',
     home: 'Home',
-    menu: 'Menu',
-    booking: 'Book a table',
-    story: 'Our bean story',
-    sustain: 'Sustainability',
-    space: 'The space',
     products: 'Products',
     culture: 'Coffee Culture',
+    business: 'Business Solutions',
+    sustain: 'Sustainability',
+    journal: 'Journal',
+    quiz: 'Taste Quiz',
+    menu: 'Café Menu',
+    booking: 'Book a Table',
+    story: 'Bean Story',
+    space: 'Spaces',
     admin: 'Admin / POS',
-    hotline: 'Hotline',
-    orderNow: 'Order now'
+    hotline: 'Bookings & Wholesale',
+    orderNow: 'Order Drink',
+    menuOpen: 'Index',
+    menuClose: 'Close',
+    drawerHouse: 'The House of An Roastery',
+    drawerExplore: 'Editorial & Store',
+    drawerVisit: 'Visit & Operations'
   },
   switcher: { label: 'Choose language' },
   story: {
@@ -405,6 +554,44 @@ const en = {
     }
   },
   home: {
+    catalog: {
+      head: 'Roastery pantry for your morning ritual',
+      sub: 'Browse by how you brew at home — every bag leaves the roastery only after proper post-roast resting.',
+      viewAll: 'Open full catalog (15 items)',
+      roastLabel: 'Roast',
+      intensityLabel: 'Intensity',
+      acidityLabel: 'Acidity',
+      brewLabel: 'Recommended brew',
+      selectAria: 'Inspect {name}'
+    },
+    cycle: {
+      head: 'The journey of coffee',
+      sub: 'Coffee begins at the origin, finds its soul in the drum, its poise in the blend, and its truth on the cupping table.',
+      cta: 'Explore Coffee Culture in full'
+    },
+    quiz: {
+      head: 'What is your coffee profile?',
+      sub: 'Three quick sensory prompts from our cupping table to match your home bag and the drink waiting for you at our bar.',
+      resultHeading: 'Your matched profile',
+      homeBagLabel: 'Take home bag',
+      barDrinkLabel: 'Order at our bar',
+      brewGuideLabel: 'Starting recipe',
+      resetBtn: 'Start over',
+      shopCta: 'View in Products'
+    },
+    journalPreview: {
+      head: 'The Coffee Journal',
+      sub: 'Field notes on harvest timing, grind-size trials, and the growers behind every cup.',
+      allLink: 'Read the full Journal',
+      readLink: 'Read dispatch'
+    },
+    b2bBanner: {
+      head: 'Coffee & equipment solutions for cafés, dining and offices',
+      body: 'Weekly roasted lots in zero-waste 5 kg returnable tubs, commercial espresso hardware, and hands-on barista calibration.',
+      cta: 'Explore Business Solutions',
+      statA: 'From 10 kg/month',
+      statB: '7-day technical care'
+    },
     pillars: {
       head: 'Three things we do every day',
       sub: 'Order in seconds, watch your drink being made, and catch pastries fresh from the oven twice a day.',
@@ -427,7 +614,7 @@ const en = {
       ]
     },
     menu: {
-      head: 'Best-selling signatures',
+      head: 'Best-selling bar signatures',
       link: 'Book a table to enjoy them in store',
       addAria: 'Add {name}',
       items: [
@@ -460,7 +647,7 @@ const en = {
     },
     story: {
       head: 'Four promises from farm to cup',
-      lede: 'A great cup needs no flavourings. Its value lies in ripe fruit, careful processing and the roaster\u2019s craft.',
+      lede: 'A great cup needs no flavourings. Its value lies in ripe fruit, careful processing and the roaster’s craft.',
       imgFarmAlt: 'A Cau Dat coffee farm in early morning mist',
       imgRoastAlt: 'Freshly roasted beans cooling on a tray',
       noteAlt: 'Cau Dat & Bao Loc, Lam Dong',
@@ -468,7 +655,7 @@ const en = {
       items: [
         { title: 'Hand-picked at peak ripeness', body: 'Only evenly red cherries are selected, maximising the natural sugars inside the bean.' },
         { title: 'Honey & natural processing', body: 'Dried on airy greenhouse beds that preserve floral, fruity and honeyed notes.' },
-        { title: 'Small-batch craft roasting', body: 'Micro-batches under 5 kg per roast keep every lot\u2019s flavour under control.' },
+        { title: 'Small-batch craft roasting', body: 'Micro-batches under 5 kg per roast keep every lot’s flavour under control.' },
         { title: 'SCA-standard cupping', body: 'Every lot is tasted and scored before it is ever served at the bar.' }
       ]
     },
@@ -477,9 +664,10 @@ const en = {
       titleEm: 'to',
       titleB: 'the cup in your hand',
       sub: 'Sustainability at An Roastery is not a slogan on the wall. It is how we buy beans, how our partner farms are tended, and how every shift uses just enough of everything.',
+      fullReportLink: 'Read full Sustainability report & rare micro-lots',
       statsAria: 'Sustainability figures',
       stats: [
-        { value: 42, suffix: '', label: 'partner farming households in Cau Dat & Bao Loc' },
+        { value: 42, suffix: '', label: 'partner farming households across Lam Dong & Son La' },
         { value: 1650, suffix: ' m', label: 'average altitude of our coffee gardens' },
         { value: 92, suffix: '%', label: 'of cherries hand-picked fully red' },
         { value: 14, suffix: '', label: 'days at most from roast day to the bar' }
@@ -519,11 +707,11 @@ const en = {
       ]
     },
     book: {
-      head: 'Table bookings & coffee workshops',
-      sub: 'Reserve a quiet work corner, a balcony seat, or join a Saturday-morning cupping with our master roaster.',
+      head: 'Table bookings & Saturday cuppings',
+      sub: 'Reserve a quiet work corner, a balcony seat, or join a Saturday-morning cupping with our roaster.',
       perks: [
         'Held for up to 30 minutes, free of charge',
-        'Power outlets, work desks and stable wifi',
+        'Power outlets, long oak desks and stable wifi',
         'A French-butter cookie with every online booking'
       ],
       branch: 'Location',
@@ -536,7 +724,7 @@ const en = {
       namePlaceholder: 'Nguyen Van An',
       phonePlaceholder: '0901 234 567',
       guestsOptions: ['1 guest', '2 guests', '3 – 5 guests', '6 – 12 guests'],
-      areaOptions: ['Quiet hall', 'Outdoor balcony', 'Near the bar', 'Work desk with outlets'],
+      areaOptions: ['Quiet hall', 'Outdoor balcony', 'Open brew bar / Cupping', 'Work desk with outlets'],
       submit: 'Hold my table — free',
       success: 'Received. We will call to confirm within a few minutes.'
     },
@@ -548,111 +736,205 @@ const en = {
         { caption: 'The reading corner', alt: 'A reading corner with a leather chair and bookshelves' },
         { caption: 'The outdoor balcony', alt: 'An outdoor balcony under the trees' }
       ],
-      quote: '\u201cThe salted coffee is honestly roasted, never oily or harsh. Table QR ordering runs smoothly — order placed, drink on its way.\u201d',
+      quote: '“The salted coffee is honestly roasted, never oily or harsh. Table QR ordering runs smoothly — order placed, drink on its way.”',
       quoteBy: 'Hoang Minh Quan · regular at the Tan Binh location'
     },
     staff: {
-      label: 'For An Roastery staff and managers',
-      links: ['Cashier POS', 'Kitchen KDS', 'Dashboard', 'Waiter app']
+      label: 'For An Roastery floor staff and shift leads',
+      links: ['Cashier POS', 'Kitchen KDS', 'Dashboard', 'Floor Tables']
     }
   },
   footer: {
-    tagline: 'Clean SCA-standard roasting, handcrafted brewing and a place to savour it all in the middle of the city.',
+    tagline: 'Clean SCA-standard roasting, handcrafted brewing and unhurried spaces in the heart of the city.',
+    exploreTitle: 'House & Store',
     hoursTitle: 'Opening hours',
     hours: [
       { label: 'Monday – Friday', value: '06:30 – 22:30' },
       { label: 'Saturday – Sunday', value: '07:00 – 23:00' },
-      { label: 'Kitchen / brunch', value: '07:30 – 14:00' }
+      { label: 'Public cupping', value: 'Sat · 09:30' }
     ],
-    branchesTitle: 'Locations',
+    branchesTitle: 'Cafés & Roastery',
     contactTitle: 'Contact',
     bookingLine: 'Reservations: 1900 6886',
+    b2bLine: 'Wholesale: b2b@anroastery.vn',
     emailLine: 'Email: hello@anroastery.vn',
     privacy: 'Privacy policy',
     terms: 'Terms'
   },
   products: {
-    kicker: 'The An Roastery Store',
-    title: 'Take the café home with you',
-    lede: 'Beans roasted in small batches at our roastery, drinks bottled fresh every morning, and the very brewing gear our baristas use each day. Roasted to order — beans only enter the drum once you check out.',
-    all: 'All',
-    add: 'Add to cart',
-    added: 'Added',
-    addAria: 'Add {name} to cart',
-    note: 'Free delivery in Ho Chi Minh City and Hanoi on orders over ₫300,000. Whole-bean and ground coffee always carry the roast date printed on the bag.',
+    meta: 'Tan Binh Roastery · Nationwide dispatch',
+    title: 'Coffee at home, packed from this week’s roast',
+    lede: 'Fifteen whole-bean origins, grind-calibrated tins, nitrogen-flushed drip bags, morning-bottled cold brews, and the stoneware and steel tools our baristas work with daily.',
+    all: 'All ranges',
+    subfilterLabel: 'Filter by origin:',
+    subfilters: {
+      all: 'All origins',
+      'cau-dat': 'Cau Dat · 1,650 m',
+      highlands: 'Bao Loc & Highlands',
+      'son-la': 'Son La Northwest',
+      blend: 'House blends'
+    },
+    add: 'Add to bag',
+    added: 'In bag',
+    addAria: 'Add {name} to bag',
+    inspect: 'Brew specs',
+    hideInspect: 'Collapse',
+    roast: 'Roast',
+    intensity: 'Intensity',
+    acidity: 'Acidity',
+    body: 'Body',
+    bagSummary: '{count} items selected · {total}',
+    bagClear: 'Clear',
+    bagCheckoutNote: 'Call 1900 6886 or pick up at any bar within 2 hours',
+    note: 'Complimentary courier delivery in Ho Chi Minh City and Hanoi on orders from ₫300,000. Every coffee bag carries its roast date, lot code, and hamlet origin.',
+    quizPromptTitle: 'Torn between floral highland Arabica and syrupy clean-roast Robusta?',
+    quizPromptCta: 'Take the 30-second Taste Profile Quiz',
     categories: {
-      bean: { label: 'Whole Bean', blurb: 'Whole beans, small-batch roasted and properly rested before packing.' },
-      ground: { label: 'Ground', blurb: 'Ground for the brewer you actually use at home — phin, espresso or pour-over.' },
-      rtd: { label: 'Ready-to-Drink', blurb: 'Bottled cold at the bar every morning; keep chilled and enjoy within 5 days.' },
-      gear: { label: 'Brewing Gear', blurb: 'Durable, friendly tools the An Roastery team trusts daily.' }
+      bean: { label: 'Whole Bean', blurb: 'For home grinders — keeping volatile oils intact until the moment you brew.' },
+      ground: { label: 'Ground', blurb: 'Milled on low-RPM flat burrs for phin filters, stovetop Moka pots, or paper cones.' },
+      drip: { label: 'Drip Bags', blurb: 'Nitrogen-flushed 12–14 g single-serve filters that perch over any mug at work or on the road.' },
+      rtd: { label: 'Bottled Cold', blurb: 'Cold-steeped and bottled in glass every morning at the bar, with a ₫5,000 bottle return credit.' },
+      gear: { label: 'Brewing Gear', blurb: 'Heavy-gauge steel phin filters, high-fired stoneware drippers, and ash-glazed village cups.' }
     }
   },
   culture: {
-    kicker: 'The An Roastery Journal',
-    title: 'Coffee Culture',
-    lede: 'From the Ethiopian highlands to a slow phin dripping on a Saigon sidewalk — coffee has never been just a drink. This is where we record the stories, rituals and techniques behind a properly made cup.',
-    chaptersLabel: 'Chapters',
+    meta: 'Monograph & Brewing Craft',
+    title: 'The living craft behind an unhurried cup',
+    lede: 'From wild Kaffa forest shrubs to a stainless phin tapping softly on a Saigon wooden table — coffee endures because people, science, and daily ritual gather around it.',
+    nav: {
+      cycle: 'The Coffee Cycle',
+      origins: 'Chronology',
+      phin: 'Phin & Heritage',
+      lab: 'Sensory Lab & Academy',
+      guides: 'Home Recipes'
+    },
     origins: {
-      index: 'Chapter 01',
-      title: 'Origins: a bean that travelled half the world',
+      title: 'Origins: how one seed crossed half the globe',
       body: [
-        'Legend has it that in the 9th century, a goatherd named Kaldi in Ethiopia\u2019s Kaffa region noticed his goats unusually alert after eating the red fruit of a wild shrub. True or not, Kaffa is still regarded as the birthplace of arabica — where the first beans were roasted, crushed and brewed to keep long nights of prayer awake.',
-        'From Ethiopia, coffee crossed to Yemen with traders, became the drink of qahveh khaneh coffee houses in Mecca and Istanbul, then landed in Venice and spread across Europe. Everywhere it stopped, coffee took a new shape: Italy\u2019s fleeting espresso, France\u2019s unhurried café crème — and later, Vietnam\u2019s slow-dripping phin.'
+        'Legend recalls a ninth-century goatherd in Ethiopia’s Kaffa forests noticing his flock wide awake after nibbling crimson berries. Carried across the Red Sea to Yemen’s port of Mocha, roasted over iron pans in Sufi courtyards, and debated over in Venice and London coffee houses, the seed adapted wherever it landed.',
+        'Coffee trees first took root in Vietnam in 1857 before finding their true home in the misty granite hills of Cau Dat and the basalt plateaus of the Central Highlands. Over sixteen decades later, Vietnam shaped its own unmistakable coffee grammar: patient, full-bodied, and meant to be shared.'
       ]
     },
-    timelineTitle: 'A timeline of one bean',
+    timelineTitle: 'Seven milestones from highland shrub to specialty bar',
     timeline: [
-      { year: '9th century', title: 'Kaffa, Ethiopia', body: 'Arabica grows wild on the highlands; the beans are eaten for energy long before they are ever brewed.' },
-      { year: '15th century', title: 'Yemen & the Muslim world', body: 'The port of Mocha takes coffee to market. The first coffee houses open — places for conversation, music and chess.' },
-      { year: '17th century', title: 'Europe takes to coffee', body: 'From Venice to London and Paris, coffee houses become "schools of the wise" — cradles of journalism and start-ups alike.' },
-      { year: '1857', title: 'Coffee reaches Vietnam', body: 'The French plant the first arabica trees in the north, beginning coffee\u2019s 165-year journey in Vietnam.' },
-      { year: 'Early 20th century', title: 'The phin is born in Vietnam', body: 'The small metal drip filter becomes an icon: cheap, durable, and yielding the dense, bold cup Vietnamese drinkers love.' },
-      { year: '1980s', title: 'Robusta greens the Central Highlands', body: 'Dak Lak and Lam Dong become robusta heartlands, lifting Vietnam into the world\u2019s top coffee exporters.' },
-      { year: 'Today', title: 'The specialty wave', body: 'A new generation of Vietnamese farmers and roasters returns to quality: ripe picking, careful processing, small batches — exactly how An Roastery works every day.' }
+      { year: '9th c.', title: 'Kaffa Highlands, Ethiopia', body: 'Wild Arabica thrives under forest canopy; ripe fruit is crushed for long mountain journeys before ever becoming a hot brew.' },
+      { year: '15th c.', title: 'Port of Mocha & Yemen', body: 'Pan-roasting and hot infusion give birth to the first public coffee houses for music, chess, and conversation.' },
+      { year: '17th c.', title: 'Venice, London & Paris', body: 'European cafés become gathering rooms for writers, scientists, and the earliest printed broadsheets.' },
+      { year: '1857', title: 'First trees in Vietnam', body: 'Early Arabica groves in northern and central provinces begin Vietnam’s 165-year cultivation story.' },
+      { year: '1920s', title: 'Cau Dat mist & basalt plateaus', body: 'High-altitude Bourbon flourishes at 1,500 m in Da Lat while Dak Lak and Bao Loc become Robusta heartlands.' },
+      { year: '1940s', title: 'Saigon iced milk & Hanoi egg coffee', body: 'Around the slow-dripping phin, Vietnamese cafés invent two enduring icons of global coffee culture.' },
+      { year: 'Today', title: 'Clean-roast & Vietnamese Specialty', body: 'Smallholders and independent roasters champion 100% ripe picking, transparent micro-lots, and zero-additive roasting.' }
     ],
     phin: {
-      index: 'Chapter 02',
-      title: 'The phin ritual: the art of taking it slow',
+      title: 'The phin ritual & two classics in glass',
       body: [
-        'A phin cannot be rushed. Hot water is poured in a slow circle, the grounds bloom like a breath, then drop by drop the coffee falls onto condensed milk — about five minutes a glass. Vietnamese drinkers turned that wait into a ritual: watch the street, read the paper, let the ice melt. Here, slow is not a flaw; slow is the flavour.',
-        'A great phin starts with clean-roasted robusta ground medium-fine, about 25 grams for a 170 ml filter, water at 96°C and a 30-second bloom before the full pour. At An Roastery the phin is still our most-ordered drink every morning — despite all the far fancier machines behind the bar.'
+        'A phin refuses to be hurried. Water at 96°C wets the bed for a thirty-second bloom before dark drops fall steadily onto condensed milk — five quiet minutes to set your phone face-down and watch the street wake up.',
+        'Out of that dense, clean-roasted base grew two beloved traditions: Saigon’s tall glass of cà phê sữa đá clinking with ice in tropical heat, and Hanoi’s autumn bowl of egg coffee crowned with golden whisked yolk foam.'
       ],
-      imgAlt: 'A phin filter dripping coffee into a glass of condensed milk',
-      imgCaption: 'A 170 ml phin, 25 g of grounds, five patient minutes — the house formula, unchanged.'
+      imgAlt: 'A stainless phin dripping coffee slowly',
+      imgCaption: '170 ml steel phin, 25 g clean-roasted grounds, 5m 15s gravity extraction.',
+      eggCaption: 'Hanoi-style egg coffee whisked with wildflower honey, kept warm in a hot-water bath.'
     },
-    heritage: {
-      index: 'Chapter 03',
-      title: 'Heritage in the glass: iced milk coffee & egg coffee',
-      subA: 'Iced coffee with condensed milk',
-      bodyA: 'Condensed milk arrived when fresh milk was still a luxury, and Vietnam turned it into the soul of cà phê sữa đá: bold, sweet and ice-cold. Stir, then let the melting ice soften the edges — the cup changes flavour with every sip, like a story with a slow ending.',
-      subB: 'Egg coffee',
-      bodyB: 'Born in 1940s Hanoi when fresh milk was scarce, egg coffee whisks yolk with condensed milk into a golden, cloud-like cream over hot coffee. It is the finest proof of a Vietnamese kitchen philosophy: scarcity never stopped creativity, and ingenuity can turn a limitation into heritage.',
-      imgAlt: 'An egg coffee with its silky golden foam',
-      imgCaption: 'Egg coffee — whipped yolk cream, served in a warm-water bowl to keep its heat.'
+    lab: {
+      title: 'Sensory Lab & Saturday Barista Table',
+      lede: 'Inspired by European coffee science centres yet welcoming as an open neighbourhood kitchen — where growers, roasters, and guests taste side by side.',
+      leftTitle: 'Roast Profiling & Quality Lab',
+      leftBody: 'Equipped with an Ikawa 100 g sample roaster, Agtron roast color meter, and digital TDS refractometers. Every incoming green lot runs three test curves before entering production.',
+      leftMeta: '100% incoming lot verification',
+      rightTitle: 'Open Saturday Cupping & Pour-Over Class',
+      rightBody: 'Every Saturday at 09:30 at our District 3 bar (8 seats per table), baristas guide guests through four Vietnamese terroirs alongside hands-on V60 and phin calibration.',
+      rightMeta: 'Complimentary with advance reservation',
+      bookCta: 'Reserve a Saturday seat'
     },
     guides: {
-      index: 'Chapter 04',
-      title: 'Home brewing guides',
-      sub: 'Three foundation recipes our baristas use to train every new hire. Master the ratios; the rest is your own palate.',
+      title: 'Three foundational recipes for home brewing',
+      sub: 'The exact starting ratios our baristas memorise in week one. Dial these in first, then adjust to your own morning palate.',
+      ratioLabel: 'Dose & water',
+      tempLabel: 'Water temp',
+      timeLabel: 'Total time',
       items: [
-        { name: 'Classic phin', ratio: '25 g coffee · 100 ml water', temp: '96°C', time: '5 – 7 minutes', body: 'Bloom for 30 seconds with 20 ml of water, seat the press gently, pour the rest and wait for the last drop before stirring into condensed milk.' },
-        { name: 'V60 pour-over', ratio: '15 g coffee · 250 ml water', temp: '92°C', time: 'about 3 minutes', body: 'Medium grind, a 45-second bloom, then slow spiral pours. Bright and floral — made for honey-processed Cau Dat arabica.' },
-        { name: 'Cold brew', ratio: '1:10 ratio · coarse grind', temp: 'Cold / room temperature', time: '18 – 24 hours', body: 'Steep in a sealed jar, filter through paper, keep chilled for up to 5 days. Drink neat over ice, or with a slice of orange like our signature.' }
-      ],
-      ratioLabel: 'Ratio',
-      tempLabel: 'Temperature',
-      timeLabel: 'Time'
-    },
-    sustain: {
-      index: 'Chapter 05',
-      title: 'Drinking kindly — for soil and growers',
-      body: 'Every good cup starts with a healthy garden and a fairly paid farmer. How An Roastery buys, processes and cuts waste at the bar is told in full in the Sustainability chapter on our homepage.',
-      cta: 'Read the Sustainability chapter'
+        { name: 'Traditional Phin', ratio: '25 g coffee : 95 ml water', temp: '95 – 96°C', time: '5 – 6 minutes', body: 'Warm the steel filter first. Level the bed, bloom with 20 ml for 30 seconds, rest the gravity damper gently, and pour the remaining 75 ml.' },
+        { name: 'V60 Pour-Over', ratio: '15 g coffee : 240 ml water', temp: '91 – 93°C', time: '2m 45s', body: 'Grind to sea-salt coarseness. Bloom with 45 g for 40 seconds, then pour in two slow concentric spirals keeping off the paper walls.' },
+        { name: '24-Hour Cold Steep', ratio: '50 g coffee : 500 ml cool water', temp: '4°C chilled', time: '20 – 24 hours', body: 'Grind coarse like cracked pepper, steep sealed in the fridge, and strain through a rinsed paper filter for five days of sweet, low-acid coffee.' }
+      ]
     },
     closing: {
-      quote: '\u201cCoffee is the finest excuse for people to sit together a little longer.\u201d',
-      by: '— The An Roastery team'
+      quote: '“Good coffee does not make the day longer, only the first fifteen minutes worth keeping.”',
+      by: '— An Roastery Roasters',
+      shopCta: 'Choose beans for home'
     }
+  },
+  business: {
+    meta: 'Wholesale roasting, commercial hardware & barista training',
+    title: 'Cultivating coffee solutions for cafés, dining rooms and offices',
+    lede: 'From a 25-seat neighbourhood bar to boutique hotels and 200-person studios: we roast to weekly order, install dependable espresso hardware, and stand behind your bar team seven days a week.',
+    ctaPrimary: 'Request a 4-lot tasting box',
+    ctaSecondary: 'Wholesale desk: 1900 6886',
+    linesHead: 'Four weekly-roasted supply programmes',
+    linesSub: 'Select your service format to inspect packaging, cup yields, and dispatch cadence.',
+    machinesHead: 'Commercial espresso & brewing hardware',
+    machinesSub: 'Workhorse machines proven across tens of thousands of shifts behind our own bars.',
+    machineFilterAll: 'All equipment',
+    servicesHead: 'Four operational commitments with every supply agreement',
+    services: [
+      { num: '01', title: 'Roasted weekly to your bar’s pace', body: 'Never warehoused stock. Lots roast on Fridays, rest over the weekend, and arrive Monday morning in peak extraction window.' },
+      { num: '02', title: 'Hands-on barista & dial-in training', body: 'On-site calibration at your counter: adjusting burrs for monsoon humidity, micro-foam milk texture, and daily backflush care.' },
+      { num: '03', title: '4-hour city technical response', body: 'Dedicated technicians in Ho Chi Minh City and Hanoi handle pressure drift, group gaskets, and loaner grinders mid-shift.' },
+      { num: '04', title: 'Brew-water mineral testing', body: 'Complimentary hardness, alkalinity, and TDS profiling prior to installation to protect boilers and cup sweetness.' }
+    ],
+    formHead: 'Request wholesale pricing & a complimentary sample kit',
+    formSub: 'Share a few details about your venue — our roastery and equipment lead will reach out the same working day.',
+    fields: {
+      company: 'Café or company name',
+      companyPh: 'e.g. Autumn Coffee Bar / Studio Minh',
+      contact: 'Contact person',
+      contactPh: 'Tran Minh Khoi',
+      phone: 'Phone number',
+      phonePh: '0903 456 789',
+      segment: 'Venue type',
+      segments: ['Independent café', 'Restaurant / Boutique hotel', 'Corporate office / Studio', 'Multi-site group / Retailer'],
+      volume: 'Estimated monthly volume',
+      volumes: ['10 – 25 kg / month', '25 – 60 kg / month', '60+ kg / month', 'Full machine + bean package'],
+      notes: 'Current machine setup or flavour direction',
+      notesPh: 'e.g. Running a 2-group machine, looking for a chocolate-forward milk espresso...',
+      submit: 'Request sample box & consultation',
+      success: 'Inquiry logged. Our B2B roastery desk will call today to confirm delivery of your tasting kit.'
+    }
+  },
+  sustainabilityPage: {
+    meta: 'Positive impact from highland soil to spent grounds',
+    title: 'Sustainability grown through honest farmgate pricing',
+    lede: 'Ecological coffee cannot exist if farming families are paid below the cost of tending soil. Our commitments begin with pre-harvest forward contracts and close in circular reuse behind every café bar.',
+    pillarsHead: 'Three evergreen pillars of our work',
+    microHead: 'Rare smallholder micro-lots preserving heirloom trees',
+    microSub: 'Tiny parcels under two hectares farmed beneath fruit-tree shade, milled and roasted separately to honour each grower by name.',
+    tastingLabel: 'Four sensory markers logged at the cupping table',
+    circularHead: 'Circular economy: nothing discarded while value remains',
+    circularSub: 'From roaster silverskin to evening espresso pucks — every byproduct enters a second useful life.',
+    roadmapHead: 'Climate resilience & low-waste roadmap, 2020 – 2028',
+    roadmap: [
+      { period: '2020 – 2022', phase: 'Phase I', title: 'Direct farmgate forward contracts', body: 'Built our first 18-household grower circle in Cau Dat and Bao Loc with locked +22% premiums for >90% ripe red harvests.' },
+      { period: '2022 – 2024', phase: 'Phase II', title: 'Agroforestry shade & husk composting', body: 'Interplanted 1,400+ persimmon, macadamia, and shade trees while composting cherry pulp on site to halve synthetic fertiliser use.' },
+      { period: '2024 – 2026', phase: 'Phase III', title: 'Zero-landfill pucks & returnable wholesale tubs', body: 'Diverted 100% of café coffee grounds to mushroom farms and launched reusable 5 kg stainless tubs for wholesale partners.' },
+      { period: '2026 – 2028', phase: 'Phase IV · In progress', title: 'Drought-hardy Liberica & solar roastery roof', body: 'Propagating deep-rooted Liberica windbreaks in central highlands and transitioning 60% of roastery electricity to rooftop solar.' }
+    ]
+  },
+  journal: {
+    meta: 'People, harvests, craft & dispatches around the cup',
+    title: 'The Coffee Journal',
+    lede: 'Field notes, grind-lab experiments, and quiet stories recorded by our roasters, baristas, and farming partners.',
+    categories: {
+      all: 'All dispatches',
+      harvest: 'Harvest & Origins',
+      craft: 'Roast & Brew Craft',
+      community: 'Community',
+      press: 'Roastery Press'
+    },
+    leadBadge: 'Lead story',
+    readArticle: 'Read full story',
+    closeArticle: 'Close reader',
+    ledgerHead: 'Roastery press & short dispatches',
+    storiesHead: 'Field & lab stories'
   }
 };
 
@@ -702,7 +984,7 @@ export function useLang() {
   return useContext(LanguageContext);
 }
 
-/** Định dạng giá VND theo ngôn ngữ hiện tại: 185.000₫ / ₫185,000. */
+/** Định dạng giá VND theo ngôn ngữ hiện tại: 195.000₫ / ₫195,000. */
 export function formatPrice(amount, lang) {
   const formatted = new Intl.NumberFormat(lang === 'vi' ? 'vi-VN' : 'en-US', {
     maximumFractionDigits: 0

@@ -1,11 +1,14 @@
+import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
-import LanguageSwitcher from './components/LanguageSwitcher';
 import { hasRole, useAuth } from './auth';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
 import CoffeeCulturePage from './pages/CoffeeCulturePage';
+import BusinessSolutionsPage from './pages/BusinessSolutionsPage';
+import SustainabilityPage from './pages/SustainabilityPage';
+import JournalPage from './pages/JournalPage';
 import DashboardPage from './pages/DashboardPage';
 import ShiftPage from './pages/ShiftPage';
 import OrdersPage from './pages/OrdersPage';
@@ -55,40 +58,56 @@ function RequireRole({ roles, children }) {
   return children;
 }
 
-const PUBLIC_PATHS = ['/', '/products', '/coffee-culture'];
+function ScrollManager() {
+  const { pathname, hash } = useLocation();
+  useEffect(() => {
+    if (hash) {
+      const id = hash.slice(1);
+      const timer = window.setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
+      return () => window.clearTimeout(timer);
+    }
+    window.scrollTo(0, 0);
+    return undefined;
+  }, [pathname, hash]);
+  return null;
+}
 
 export default function App() {
-  const { pathname } = useLocation();
-  const showSwitcher = PUBLIC_PATHS.includes(pathname);
   return (
     <>
-      {showSwitcher && <LanguageSwitcher />}
+      <ScrollManager />
       <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/products" element={<ProductsPage />} />
-      <Route path="/coffee-culture" element={<CoffeeCulturePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route element={<RequireAuth><Layout /></RequireAuth>}>
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="shift" element={<ShiftPage />} />
-        <Route path="tables" element={<TablesPage />} />
-        <Route path="orders" element={<RequireRole roles={['Admin', 'Waiter', 'Cashier']}><OrdersPage /></RequireRole>} />
-        <Route path="orders/new" element={<RequireRole roles={['Admin', 'Waiter', 'Cashier']}><OrderFormPage /></RequireRole>} />
-        <Route path="orders/:id" element={<RequireRole roles={['Admin', 'Waiter', 'Cashier']}><OrderDetailPage /></RequireRole>} />
-        <Route path="payments" element={<RequireRole roles={['Admin', 'Cashier', 'Waiter']}><PaymentsPage /></RequireRole>} />
-        <Route path="payments/:orderId" element={<RequireRole roles={['Admin', 'Cashier', 'Waiter']}><PayPage /></RequireRole>} />
-        <Route path="receipts/:id" element={<RequireRole roles={['Admin', 'Cashier', 'Waiter']}><ReceiptPage /></RequireRole>} />
-        <Route path="menu" element={<RequireRole roles={['Admin']}><MenuPage /></RequireRole>} />
-        <Route path="menu/new" element={<RequireRole roles={['Admin']}><MenuFormPage /></RequireRole>} />
-        <Route path="menu/:id" element={<RequireRole roles={['Admin']}><MenuFormPage /></RequireRole>} />
-        <Route path="inventory" element={<RequireRole roles={['Admin']}><InventoryPage /></RequireRole>} />
-        <Route path="customers" element={<RequireRole roles={['Admin', 'Cashier']}><CustomersPage /></RequireRole>} />
-        <Route path="customers/new" element={<RequireRole roles={['Admin', 'Cashier']}><CustomerFormPage /></RequireRole>} />
-        <Route path="customers/:id" element={<RequireRole roles={['Admin', 'Cashier']}><CustomerFormPage /></RequireRole>} />
-        <Route path="users" element={<RequireRole roles={['Admin']}><UsersPage /></RequireRole>} />
-        <Route path="reports" element={<RequireRole roles={['Admin']}><ReportsPage /></RequireRole>} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/coffee-culture" element={<CoffeeCulturePage />} />
+        <Route path="/business-solutions" element={<BusinessSolutionsPage />} />
+        <Route path="/sustainability" element={<SustainabilityPage />} />
+        <Route path="/journal" element={<JournalPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<RequireAuth><Layout /></RequireAuth>}>
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="shift" element={<ShiftPage />} />
+          <Route path="tables" element={<TablesPage />} />
+          <Route path="orders" element={<RequireRole roles={['Admin', 'Waiter', 'Cashier']}><OrdersPage /></RequireRole>} />
+          <Route path="orders/new" element={<RequireRole roles={['Admin', 'Waiter', 'Cashier']}><OrderFormPage /></RequireRole>} />
+          <Route path="orders/:id" element={<RequireRole roles={['Admin', 'Waiter', 'Cashier']}><OrderDetailPage /></RequireRole>} />
+          <Route path="payments" element={<RequireRole roles={['Admin', 'Cashier', 'Waiter']}><PaymentsPage /></RequireRole>} />
+          <Route path="payments/:orderId" element={<RequireRole roles={['Admin', 'Cashier', 'Waiter']}><PayPage /></RequireRole>} />
+          <Route path="receipts/:id" element={<RequireRole roles={['Admin', 'Cashier', 'Waiter']}><ReceiptPage /></RequireRole>} />
+          <Route path="menu" element={<RequireRole roles={['Admin']}><MenuPage /></RequireRole>} />
+          <Route path="menu/new" element={<RequireRole roles={['Admin']}><MenuFormPage /></RequireRole>} />
+          <Route path="menu/:id" element={<RequireRole roles={['Admin']}><MenuFormPage /></RequireRole>} />
+          <Route path="inventory" element={<RequireRole roles={['Admin']}><InventoryPage /></RequireRole>} />
+          <Route path="customers" element={<RequireRole roles={['Admin', 'Cashier']}><CustomersPage /></RequireRole>} />
+          <Route path="customers/new" element={<RequireRole roles={['Admin', 'Cashier']}><CustomerFormPage /></RequireRole>} />
+          <Route path="customers/:id" element={<RequireRole roles={['Admin', 'Cashier']}><CustomerFormPage /></RequireRole>} />
+          <Route path="users" element={<RequireRole roles={['Admin']}><UsersPage /></RequireRole>} />
+          <Route path="reports" element={<RequireRole roles={['Admin']}><ReportsPage /></RequireRole>} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );

@@ -1,114 +1,246 @@
 import { useMemo, useState } from 'react';
-import { PublicFooter, PublicHeader } from '../components/PublicChrome';
+import { PublicFooter, PublicHeader, SensoryBar } from '../components/PublicChrome';
+import { CATEGORIES, PRODUCTS, SUBFILTERS } from '../data/products';
 import { formatPrice, useLang } from '../i18n';
-import { CATEGORIES, PRODUCTS } from '../data/products';
 import '../styles/homepage.css';
 import '../styles/editorial.css';
 
 export default function ProductsPage() {
   const { lang, t } = useLang();
-  const [filter, setFilter] = useState('all');
-  const [added, setAdded] = useState({});
+  const [catFilter, setCatFilter] = useState('all');
+  const [originFilter, setOriginFilter] = useState('all');
+  const [expandedId, setExpandedId] = useState(null);
+  const [bag, setBag] = useState({});
 
-  const visible = useMemo(
-    () => (filter === 'all' ? PRODUCTS : PRODUCTS.filter((p) => p.cat === filter)),
-    [filter]
-  );
+  const catCounts = useMemo(() => {
+    const map = { all: PRODUCTS.length };
+    CATEGORIES.forEach((c) => {
+      map[c] = PRODUCTS.filter((p) => p.cat === c).length;
+    });
+    return map;
+  }, []);
+
+  const filtered = useMemo(() => {
+    return PRODUCTS.filter((product) => {
+      const matchCat = catFilter === 'all' || product.cat === catFilter;
+      const matchOrigin =
+        originFilter === 'all' ||
+        catFilter === 'gear' ||
+        product.originKey === originFilter;
+      return matchCat && matchOrigin;
+    });
+  }, [catFilter, originFilter]);
 
   const groups = useMemo(() => {
-    if (filter !== 'all') return [{ cat: filter, items: visible }];
+    if (catFilter !== 'all') {
+      return [{ cat: catFilter, items: filtered }];
+    }
     return CATEGORIES.map((cat) => ({
       cat,
-      items: PRODUCTS.filter((p) => p.cat === cat)
-    })).filter((group) => group.items.length > 0);
-  }, [filter, visible]);
+      items: filtered.filter((p) => p.cat === cat)
+    })).filter((g) => g.items.length > 0);
+  }, [catFilter, filtered]);
+
+  const bagStats = useMemo(() => {
+    let count = 0;
+    let total = 0;
+    Object.entries(bag).forEach(([id, qty]) => {
+      if (!qty) return;
+      const found = PRODUCTS.find((p) => p.id === id);
+      if (found) {
+        count += qty;
+        total += found.price * qty;
+      }
+    });
+    return { count, total };
+  }, [bag]);
 
   function onAdd(id) {
-    setAdded((prev) => ({ ...prev, [id]: true }));
-    window.setTimeout(() => {
-      setAdded((prev) => ({ ...prev, [id]: false }));
-    }, 1400);
+    setBag((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
   }
 
   return (
-    <div className="hp">
+    <div className="hp ed-page">
       <PublicHeader />
       <main>
-        <section className="hp-shell ed-hero">
-          <p className="ed-kicker">{t('products.kicker')}</p>
-          <h1 className="ed-title">{t('products.title')}</h1>
+        <section className="hp-shell ed-masthead">
+          <p className="ed-meta-line">{t('products.meta')}</p>
+          <h1 className="ed-display-title">{t('products.title')}</h1>
           <p className="ed-lede">{t('products.lede')}</p>
 
-          <div className="ed-filters" role="tablist" aria-label={t('products.kicker')}>
+          <div className="ed-tabs" role="tablist" aria-label={t('products.title')}>
             <button
               type="button"
-              className={`ed-chip${filter === 'all' ? ' is-active' : ''}`}
-              onClick={() => setFilter('all')}
+              role="tab"
+              aria-selected={catFilter === 'all'}
+              className={`ed-tab${catFilter === 'all' ? ' is-active' : ''}`}
+              onClick={() => setCatFilter('all')}
             >
-              {t('products.all')}
+              <span className="ed-tab__label">{t('products.all')}</span>
+              <span className="ed-tab__count">{catCounts.all}</span>
             </button>
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 type="button"
-                className={`ed-chip${filter === cat ? ' is-active' : ''}`}
-                onClick={() => setFilter(cat)}
+                role="tab"
+                aria-selected={catFilter === cat}
+                className={`ed-tab${catFilter === cat ? ' is-active' : ''}`}
+                onClick={() => {
+                  setCatFilter(cat);
+                  if (cat === 'gear') setOriginFilter('all');
+                }}
               >
-                {t(`products.categories.${cat}.label`)}
+                <span className="ed-tab__label">{t(`products.categories.${cat}.label`)}</span>
+                <span className="ed-tab__count">{catCounts[cat]}</span>
               </button>
             ))}
           </div>
+
+          {catFilter !== 'gear' && (
+            <div className="ed-subfilters" role="group" aria-label={t('products.subfilterLabel')}>
+              <span className="ed-subfilters__label">{t('products.subfilterLabel')}</span>
+              {SUBFILTERS.map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`ed-subfilter${originFilter === key ? ' is-active' : ''}`}
+                  onClick={() => setOriginFilter(key)}
+                >
+                  {t(`products.subfilters.${key}`)}
+                </button>
+              ))}
+            </div>
+          )}
         </section>
 
-        <section className="hp-shell">
-          {groups.map((group) => (
-            <div key={group.cat}>
-              <div className="ed-cat-head">
-                <h2>{t(`products.categories.${group.cat}.label`)}</h2>
+        <section className="hp-shell ed-catalog-wrap">
+          {groups.map((group, groupIdx) => (
+            <div className="ed-cat-block" key={group.cat}>
+              <header className="ed-cat-header">
+                <div className="ed-cat-header__title">
+                  <span className="ed-cat-header__num">
+                    {String(groupIdx + 1).padStart(2, '0')}
+                  </span>
+                  <h2>{t(`products.categories.${group.cat}.label`)}</h2>
+                </div>
                 <p>{t(`products.categories.${group.cat}.blurb`)}</p>
-              </div>
-              <div className="ed-grid">
-                {group.items.map((product) => (
-                  <article className="ed-card" key={product.id}>
-                    <div className="ed-card__media">
-                      <img src={product.img} alt={product.name[lang]} loading="lazy" />
-                      {product.badge && (
-                        <span className="ed-card__badge">{product.badge[lang]}</span>
-                      )}
-                    </div>
-                    <div className="ed-card__body">
-                      <p className="ed-card__unit">{product.unit[lang]}</p>
-                      <h3 className="ed-card__name">{product.name[lang]}</h3>
-                      <p className="ed-card__desc">{product.desc[lang]}</p>
-                      <p className="ed-card__notes">{product.notes[lang]}</p>
-                      <div className="ed-card__foot">
-                        <span className="ed-card__price">{formatPrice(product.price, lang)}</span>
-                        <button
-                          type="button"
-                          className={`ed-add${added[product.id] ? ' is-added' : ''}`}
-                          aria-label={t('products.addAria').replace('{name}', product.name[lang])}
-                          onClick={() => onAdd(product.id)}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: 17 }} aria-hidden="true">
-                            {added[product.id] ? 'check' : 'shopping_bag'}
-                          </span>
-                          {added[product.id] ? t('products.added') : t('products.add')}
-                        </button>
+              </header>
+
+              <div className="ed-catalog">
+                {group.items.map((product) => {
+                  const qty = bag[product.id] || 0;
+                  const isOpen = expandedId === product.id;
+                  return (
+                    <article className="ed-item" key={product.id}>
+                      <div className="ed-item__media">
+                        <img
+                          src={product.img}
+                          alt={product.name[lang]}
+                          width={600}
+                          height={450}
+                          loading="lazy"
+                        />
+                        {product.tag && (
+                          <span className="ed-item__tag">{product.tag[lang]}</span>
+                        )}
                       </div>
-                    </div>
-                  </article>
-                ))}
+
+                      <div className="ed-item__body">
+                        <div className="ed-item__meta">
+                          <span>{product.origin[lang]}</span>
+                          <span>{product.unit[lang]}</span>
+                        </div>
+
+                        <h3 className="ed-item__name">{product.name[lang]}</h3>
+                        <p className="ed-item__notes">{product.notes[lang]}</p>
+                        <p className="ed-item__desc">{product.desc[lang]}</p>
+
+                        {product.roast != null && (
+                          <div className="ed-item__meters">
+                            <SensoryBar label={t('products.roast')} value={product.roast} />
+                            <SensoryBar label={t('products.intensity')} value={product.intensity} />
+                            <SensoryBar label={t('products.acidity')} value={product.acidity} />
+                          </div>
+                        )}
+
+                        {isOpen && (
+                          <p className="ed-item__recipe">{product.brew[lang]}</p>
+                        )}
+
+                        <div className="ed-item__foot">
+                          <div>
+                            <span className="ed-item__price">
+                              {formatPrice(product.price, lang)}
+                            </span>
+                            <button
+                              type="button"
+                              className="ed-item__spec-toggle"
+                              aria-expanded={isOpen}
+                              onClick={() =>
+                                setExpandedId(isOpen ? null : product.id)
+                              }
+                            >
+                              {isOpen ? t('products.hideInspect') : t('products.inspect')}
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            className={`ed-buy-btn${qty > 0 ? ' is-added' : ''}`}
+                            aria-label={t('products.addAria').replace('{name}', product.name[lang])}
+                            onClick={() => onAdd(product.id)}
+                          >
+                            <span>{qty > 0 ? `${t('products.added')} (${qty})` : t('products.add')}</span>
+                            <span aria-hidden="true">+</span>
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             </div>
           ))}
 
-          <p className="ed-note">
-            <span className="material-symbols-outlined" aria-hidden="true">
-              local_shipping
-            </span>
-            <span>{t('products.note')}</span>
-          </p>
+          <div className="ed-dispatch-strip">
+            <p>{t('products.note')}</p>
+            <div className="ed-dispatch-strip__cta">
+              <span>{t('products.quizPromptTitle')}</span>
+              <a className="ed-inline-link" href="/#gu-ca-phe">
+                <span>{t('products.quizPromptCta')}</span>
+                <span aria-hidden="true">→</span>
+              </a>
+            </div>
+          </div>
         </section>
+
+        {bagStats.count > 0 && (
+          <aside className="ed-bag-tray" aria-live="polite">
+            <div className="hp-shell ed-bag-tray__inner">
+              <div>
+                <strong>
+                  {t('products.bagSummary')
+                    .replace('{count}', String(bagStats.count))
+                    .replace('{total}', formatPrice(bagStats.total, lang))}
+                </strong>
+                <span>{t('products.bagCheckoutNote')}</span>
+              </div>
+              <div className="ed-bag-tray__actions">
+                <button
+                  type="button"
+                  className="ed-bag-tray__clear"
+                  onClick={() => setBag({})}
+                >
+                  {t('products.bagClear')}
+                </button>
+                <a className="hp-btn hp-btn--brass" href="tel:19006886">
+                  1900 6886
+                </a>
+              </div>
+            </div>
+          </aside>
+        )}
       </main>
       <PublicFooter />
     </div>

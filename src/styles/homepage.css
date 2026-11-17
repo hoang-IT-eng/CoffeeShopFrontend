@@ -209,6 +209,20 @@ html.lenis {
   background: #855a30;
 }
 
+.hp a.hp-btn--primary,
+.hp a.hp-btn--brass,
+.hp a.hp-btn--ghost-on-dark {
+  color: var(--hp-foam);
+}
+
+.hp a.hp-btn--ghost {
+  color: var(--hp-ink);
+}
+
+.hp [id] {
+  scroll-margin-top: 5.25rem;
+}
+
 .hp-btn--block {
   width: 100%;
 }
@@ -1286,11 +1300,9 @@ html.lenis {
 
 .hp-chapter__title {
   margin: 0 0 0.3rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--hp-mute);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--hp-brass);
 }
 
 .hp-chapter h3 {
@@ -1423,10 +1435,8 @@ html.lenis {
 
 .hp-journey__phase {
   margin: 0;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.84rem;
+  font-weight: 600;
   color: var(--hp-brass);
 }
 

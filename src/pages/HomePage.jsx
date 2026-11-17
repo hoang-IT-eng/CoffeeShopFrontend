@@ -1,10 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import Lenis from 'lenis';
+import CoffeeCycleSection from '../components/CoffeeCycleSection';
 import FrameStory from '../components/FrameStory';
-import { useLang } from '../i18n';
+import { PublicFooter, PublicHeader, SensoryBar } from '../components/PublicChrome';
+import { JOURNAL_ARTICLES, QUIZ_STEPS, resolveQuizProfile } from '../data/editorial';
+import { CATEGORIES, PRODUCTS } from '../data/products';
+import { formatPrice, useLang } from '../i18n';
 import '../styles/homepage.css';
+import '../styles/editorial.css';
 
 const MENU_IMGS = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuC117OxdRy2nel927BqAp30l75gOBC-YE17MqQYUgdaZa9lf6ToZvvXMpBY5h7ZB82Z7XXYNx3LZs1ufRC5KnqV8aWg6hM4f0zdjMy4OmtvhMZOAd8fB4H9YwoLVZH8HcGJJpzK9hW8L1d4iNRDzKe5FqwwxvKOchxlNvGjxKR2-xR2QNdjQ250ifqN47goKwYOhlbwrBaTvnPxDlmpNanXrcJQy_g8iTkwPUX8julgRcA9bvMOChJaFQ',
@@ -14,26 +19,55 @@ const MENU_IMGS = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuAKOvn7OWVJ5avDEcc7_MXkkxBUqP89EDGxkJYf3-VC1UikBLlzjgdLhL4xGB9GknBKFiliZCXPLyJI4qP6sVgZadpCC2zKuni5f7Q6Z2fCDLWysHNnUeBxZgDBrfIQfdHyE_Oa4i_exB5mQy4lFCr5njWQ9wLgMx4yg8878BIpER2AXtz6IDUF-knDGr2PNS_u-dPvIxcditoK9c4U9ayRZPLQFf7u3lQInERB5Q7KtkHXj_B6DHKRUw',
 ];
 
-
-
-
-
-
-
-
-
 export default function HomePage() {
   const rootRef = useRef(null);
   const [added, setAdded] = useState({});
   const [booked, setBooked] = useState(false);
+
+  /* Landing product showcase tabs (Delta Cafés inspired) */
+  const [activeCat, setActiveCat] = useState('bean');
+  const [activeProdId, setActiveProdId] = useState('cau-dat-honey');
+
+  /* Coffee Profile Quiz state */
+  const [quizAnswers, setQuizAnswers] = useState({
+    ritual: 'phin',
+    palate: 'nutty',
+    style: 'milk'
+  });
+
   const { lang, t } = useLang();
   const langRef = useRef(lang);
   langRef.current = lang;
+
   const MENU = t('home.menu.items').map((item, i) => ({ ...item, img: MENU_IMGS[i] }));
   const SUSTAIN_STATS = t('home.sustain.stats');
   const SUSTAIN_CHAPTERS = t('home.sustain.chapters');
   const JOURNEY = t('home.sustain.journey');
   const COMMITMENTS = t('home.story.items');
+
+  const catProducts = useMemo(
+    () => PRODUCTS.filter((p) => p.cat === activeCat),
+    [activeCat]
+  );
+
+  const featuredProduct = useMemo(
+    () => catProducts.find((p) => p.id === activeProdId) || catProducts[0],
+    [catProducts, activeProdId]
+  );
+
+  const matchedProfile = useMemo(
+    () => resolveQuizProfile(quizAnswers),
+    [quizAnswers]
+  );
+
+  const matchedProduct = useMemo(
+    () =>
+      PRODUCTS.find((p) => p.id === matchedProfile.productId) || PRODUCTS[0],
+    [matchedProfile]
+  );
+
+  const leadJournal = JOURNAL_ARTICLES[0];
+  const sideJournals = JOURNAL_ARTICLES.slice(1, 4);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -43,7 +77,7 @@ export default function HomePage() {
     const drifts = root.querySelectorAll('[data-drift]');
     let lenis;
 
-    const paint = (scrollY, velocity = 0) => {
+    const paint = (scrollY) => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       const progress = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
       root.style.setProperty('--hp-progress', progress.toFixed(4));
@@ -64,7 +98,7 @@ export default function HomePage() {
           seen.unobserve(entry.target);
         });
       },
-      { threshold: 0.25 }
+      { threshold: 0.2 }
     );
     root.querySelectorAll('.hp-menu-item').forEach((item, index) => {
       item.style.setProperty('--hp-i', String(index));
@@ -95,10 +129,10 @@ export default function HomePage() {
           const started = performance.now();
           const duration = 1500;
           const stepCount = (now) => {
-            const t = Math.min(1, (now - started) / duration);
-            const eased = 1 - Math.pow(1 - t, 3);
+            const p = Math.min(1, (now - started) / duration);
+            const eased = 1 - Math.pow(1 - p, 3);
             node.textContent = wholeFmt.format(Math.round(target * eased));
-            if (t < 1) requestAnimationFrame(stepCount);
+            if (p < 1) requestAnimationFrame(stepCount);
           };
           requestAnimationFrame(stepCount);
         });
@@ -115,15 +149,13 @@ export default function HomePage() {
       const target = document.querySelector(hash);
       if (!target) return;
       event.preventDefault();
-      if (lenis) lenis.scrollTo(target, { offset: -76, duration: 1.15 });
+      if (lenis) lenis.scrollTo(target, { offset: -76, duration: 1.1 });
       else target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
     };
     root.addEventListener('click', onAnchor);
 
     if (reduce) {
-      const onScroll = () => {
-        paint(window.scrollY);
-      };
+      const onScroll = () => paint(window.scrollY);
       onScroll();
       window.addEventListener('scroll', onScroll, { passive: true });
       return () => {
@@ -141,9 +173,7 @@ export default function HomePage() {
       wheelMultiplier: 0.92,
       touchMultiplier: 1.05
     });
-    const onLenisScroll = (event) => {
-      paint(event.scroll);
-    };
+    const onLenisScroll = (event) => paint(event.scroll);
     lenis.on('scroll', onLenisScroll);
     const tick = (time) => {
       lenis.raf(time * 1000);
@@ -162,11 +192,11 @@ export default function HomePage() {
     };
   }, []);
 
-  function onAdd(name) {
-    setAdded((prev) => ({ ...prev, [name]: true }));
+  function onAdd(key) {
+    setAdded((prev) => ({ ...prev, [key]: true }));
     window.setTimeout(() => {
-      setAdded((prev) => ({ ...prev, [name]: false }));
-    }, 1200);
+      setAdded((prev) => ({ ...prev, [key]: false }));
+    }, 1300);
   }
 
   function onBook(event) {
@@ -174,40 +204,19 @@ export default function HomePage() {
     setBooked(true);
   }
 
+  function handleSelectCategory(cat) {
+    setActiveCat(cat);
+    const first = PRODUCTS.find((p) => p.cat === cat);
+    if (first) setActiveProdId(first.id);
+  }
+
   return (
-    <div className="hp" ref={rootRef}>
+    <div className="hp ed-page" ref={rootRef}>
       <div className="hp-rail" aria-hidden="true">
         <span className="hp-rail__fill" />
       </div>
-      <header className="hp-header">
-        <div className="hp-shell hp-header__inner">
-          <a className="hp-brand" href="#top">
-            <span className="hp-brand__name">An Roastery</span>
-            <span className="hp-brand__tag">{t('brand.tag')}</span>
-          </a>
 
-          <nav className="hp-nav" aria-label={t('nav.label')}>
-            <a href="#thuc-don">{t('nav.menu')}</a>
-            <Link to="/products">{t('nav.products')}</Link>
-            <Link to="/coffee-culture">{t('nav.culture')}</Link>
-            <a href="#dat-ban">{t('nav.booking')}</a>
-            <a href="#cau-chuyen">{t('nav.story')}</a>
-            <a href="#ben-vung">{t('nav.sustain')}</a>
-            <a href="#khong-gian">{t('nav.space')}</a>
-            <Link to="/login">{t('nav.admin')}</Link>
-          </nav>
-
-          <div className="hp-header__actions">
-            <div className="hp-hotline">
-              <span>{t('nav.hotline')}</span>
-              <a href="tel:19006886">1900 6886</a>
-            </div>
-            <a className="hp-btn hp-btn--primary" href="#thuc-don">
-              {t('nav.orderNow')}
-            </a>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main id="top">
         <FrameStory />
@@ -230,7 +239,142 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="hp-section" id="thuc-don">
+        {/* --- Delta-inspired Tabbed Product & Origin Showcase on Landing --- */}
+        <section className="hp-section" id="san-pham">
+          <div className="hp-shell">
+            <div className="hp-section__head">
+              <h2>{t('home.catalog.head')}</h2>
+              <p>{t('home.catalog.sub')}</p>
+            </div>
+
+            <div className="ed-tabs" role="tablist" aria-label={t('home.catalog.head')}>
+              {CATEGORIES.map((cat) => {
+                const count = PRODUCTS.filter((p) => p.cat === cat).length;
+                const isSelected = activeCat === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    className={`ed-tab${isSelected ? ' is-active' : ''}`}
+                    onClick={() => handleSelectCategory(cat)}
+                  >
+                    <span className="ed-tab__label">{t(`products.categories.${cat}.label`)}</span>
+                    <span className="ed-tab__count">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {featuredProduct && (
+              <div className="ed-home-showcase" role="tabpanel">
+                <article className="ed-specimen">
+                  <div className="ed-specimen__media">
+                    <img
+                      src={featuredProduct.img}
+                      alt={featuredProduct.name[lang]}
+                      width={720}
+                      height={540}
+                      loading="lazy"
+                    />
+                    {featuredProduct.tag && (
+                      <span className="ed-item__tag">{featuredProduct.tag[lang]}</span>
+                    )}
+                  </div>
+
+                  <div className="ed-specimen__body">
+                    <div className="ed-item__meta">
+                      <span>{featuredProduct.origin[lang]}</span>
+                      <span>{featuredProduct.unit[lang]}</span>
+                    </div>
+
+                    <h3>{featuredProduct.name[lang]}</h3>
+                    <p className="ed-item__notes">{featuredProduct.notes[lang]}</p>
+                    <p className="ed-specimen__desc">{featuredProduct.desc[lang]}</p>
+
+                    {featuredProduct.roast != null && (
+                      <div className="ed-item__meters">
+                        <SensoryBar
+                          label={t('home.catalog.roastLabel')}
+                          value={featuredProduct.roast}
+                        />
+                        <SensoryBar
+                          label={t('home.catalog.intensityLabel')}
+                          value={featuredProduct.intensity}
+                        />
+                        <SensoryBar
+                          label={t('home.catalog.acidityLabel')}
+                          value={featuredProduct.acidity}
+                        />
+                      </div>
+                    )}
+
+                    <p className="ed-specimen__brew">
+                      <strong>{t('home.catalog.brewLabel')}:</strong> {featuredProduct.brew[lang]}
+                    </p>
+
+                    <div className="ed-specimen__foot">
+                      <span className="ed-item__price">
+                        {formatPrice(featuredProduct.price, lang)}
+                      </span>
+                      <button
+                        type="button"
+                        className={`ed-buy-btn${added[featuredProduct.id] ? ' is-added' : ''}`}
+                        onClick={() => onAdd(featuredProduct.id)}
+                      >
+                        <span>
+                          {added[featuredProduct.id] ? t('products.added') : t('products.add')}
+                        </span>
+                        <span aria-hidden="true">{added[featuredProduct.id] ? '✓' : '+'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <div className="ed-specimen-index">
+                  <p className="ed-specimen-index__blurb">
+                    {t(`products.categories.${activeCat}.blurb`)}
+                  </p>
+
+                  <ul className="ed-specimen-list">
+                    {catProducts.map((item, idx) => {
+                      const current = item.id === featuredProduct.id;
+                      return (
+                        <li key={item.id}>
+                          <button
+                            type="button"
+                            className={`ed-specimen-row${current ? ' is-active' : ''}`}
+                            aria-label={t('home.catalog.selectAria').replace('{name}', item.name[lang])}
+                            onClick={() => setActiveProdId(item.id)}
+                          >
+                            <span className="ed-specimen-row__num">0{idx + 1}</span>
+                            <span className="ed-specimen-row__main">
+                              <strong>{item.name[lang]}</strong>
+                              <small>{item.notes[lang]}</small>
+                            </span>
+                            <span className="ed-specimen-row__price">
+                              {formatPrice(item.price, lang)}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  <div className="ed-specimen-index__more">
+                    <Link className="ed-inline-link" to="/products">
+                      <span>{t('home.catalog.viewAll')}</span>
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="hp-section hp-section--foam" id="thuc-don">
           <div className="hp-shell">
             <div className="hp-section__head">
               <h2>{t('home.menu.head')}</h2>
@@ -273,19 +417,100 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* --- Delta-inspired 4-Step Coffee Cycle (Origins · Roast · Blend · Tasting) --- */}
+        <CoffeeCycleSection showCultureLink />
+
+        {/* --- Delta-inspired Interactive Coffee Profile Quiz --- */}
+        <section className="hp-section hp-section--ink" id="gu-ca-phe">
+          <div className="hp-shell">
+            <div className="hp-section__head">
+              <h2>{t('home.quiz.head')}</h2>
+              <p>{t('home.quiz.sub')}</p>
+            </div>
+
+            <div className="ed-quiz">
+              <div className="ed-quiz__prompts">
+                {QUIZ_STEPS.map((step) => (
+                  <fieldset className="ed-quiz__step" key={step.id}>
+                    <legend>{step.question[lang]}</legend>
+                    <div className="ed-quiz__options">
+                      {step.options.map((opt) => {
+                        const active = quizAnswers[step.id] === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            aria-pressed={active}
+                            className={`ed-quiz__opt${active ? ' is-selected' : ''}`}
+                            onClick={() =>
+                              setQuizAnswers((prev) => ({ ...prev, [step.id]: opt.value }))
+                            }
+                          >
+                            {opt.label[lang]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+                ))}
+              </div>
+
+              <aside className="ed-quiz__result" aria-live="polite">
+                <p className="ed-quiz__result-label">{t('home.quiz.resultHeading')}</p>
+                <h3>{matchedProfile.title[lang]}</h3>
+                <p className="ed-quiz__summary">{matchedProfile.summary[lang]}</p>
+
+                <div className="ed-quiz__match">
+                  <img
+                    src={matchedProduct.img}
+                    alt={matchedProduct.name[lang]}
+                    width={160}
+                    height={120}
+                    loading="lazy"
+                  />
+                  <div>
+                    <span>{t('home.quiz.homeBagLabel')}</span>
+                    <strong>{matchedProduct.name[lang]}</strong>
+                    <small>
+                      {matchedProduct.notes[lang]} · {formatPrice(matchedProduct.price, lang)}
+                    </small>
+                  </div>
+                </div>
+
+                <dl className="ed-quiz__pair">
+                  <div>
+                    <dt>{t('home.quiz.barDrinkLabel')}</dt>
+                    <dd>{matchedProfile.barDrink[lang]}</dd>
+                  </div>
+                  <div>
+                    <dt>{t('home.quiz.brewGuideLabel')}</dt>
+                    <dd>{matchedProfile.ratio[lang]}</dd>
+                  </div>
+                </dl>
+
+                <div className="ed-quiz__actions">
+                  <Link className="hp-btn hp-btn--brass" to="/products">
+                    {t('home.quiz.shopCta')}
+                  </Link>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
         <section className="hp-section hp-section--foam" id="cau-chuyen">
           <div className="hp-shell hp-story">
             <div className="hp-story__visual">
               <div className="hp-frame">
-              <img
-                className="hp-drift"
-                data-drift="0.08"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqDL4pxQXm-QEu5d9xNQIWgie0vwKBfpwBwGaJ3EspbfEKN4BJabbaY9bviyN7PdoAE8ifCSXLwnYiSp8Yx9KIK0rP9-NzzuYe4SSZSgK1MUarnBp6B7SUQpv-HXIz8VpE0MuaBE5Y8cj6aPlz6cAPLG9mhk5ryS46D1cyAiIZ6iVkUzdQBg7Mf_3x0pqq_PJoaWBJCcSi4nb9La3U-0Yo1XNEyXfDzg59_EjisCOD_F_UWZFqD74U1w"
-                alt={t('home.story.imgFarmAlt')}
-                width={640}
-                height={800}
-                loading="lazy"
-              />
+                <img
+                  className="hp-drift"
+                  data-drift="0.08"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqDL4pxQXm-QEu5d9xNQIWgie0vwKBfpwBwGaJ3EspbfEKN4BJabbaY9bviyN7PdoAE8ifCSXLwnYiSp8Yx9KIK0rP9-NzzuYe4SSZSgK1MUarnBp6B7SUQpv-HXIz8VpE0MuaBE5Y8cj6aPlz6cAPLG9mhk5ryS46D1cyAiIZ6iVkUzdQBg7Mf_3x0pqq_PJoaWBJCcSi4nb9La3U-0Yo1XNEyXfDzg59_EjisCOD_F_UWZFqD74U1w"
+                  alt={t('home.story.imgFarmAlt')}
+                  width={640}
+                  height={800}
+                  loading="lazy"
+                />
               </div>
               <div className="hp-story__note">
                 <strong>1.650m</strong>
@@ -296,15 +521,15 @@ export default function HomePage() {
                 <span>{t('home.story.noteRoast')}</span>
               </div>
               <div className="hp-frame">
-              <img
-                className="hp-drift"
-                data-drift="0.12"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqHKTNaqWBmkTZingmeTQfG_APVvRk0ey9eNI6u725znsnG7Yp7BMVJgqWRsubge5phrxlKou7BpoeHp-BzCklXzyyTX0ug2CKTDmaIiRuWIEJ-6KIj26PPm1bBj0ObU1MtJ2t_fOIgY9w-76wIGpTsJJJNdMITSXo1GGhV9cTH9j0p1DL2MznkNpDwJHhpeLrw_njpojUvY_9h-ur6XVThFhK3SJJlLp6an2GS_Vlfcz47eQxShsjzw"
-                alt={t('home.story.imgRoastAlt')}
-                width={640}
-                height={800}
-                loading="lazy"
-              />
+                <img
+                  className="hp-drift"
+                  data-drift="0.12"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqHKTNaqWBmkTZingmeTQfG_APVvRk0ey9eNI6u725znsnG7Yp7BMVJgqWRsubge5phrxlKou7BpoeHp-BzCklXzyyTX0ug2CKTDmaIiRuWIEJ-6KIj26PPm1bBj0ObU1MtJ2t_fOIgY9w-76wIGpTsJJJNdMITSXo1GGhV9cTH9j0p1DL2MznkNpDwJHhpeLrw_njpojUvY_9h-ur6XVThFhK3SJJlLp6an2GS_Vlfcz47eQxShsjzw"
+                  alt={t('home.story.imgRoastAlt')}
+                  width={640}
+                  height={800}
+                  loading="lazy"
+                />
               </div>
             </div>
 
@@ -361,6 +586,13 @@ export default function HomePage() {
                 </article>
               ))}
             </div>
+
+            <div className="ed-section-bridge hp-reveal">
+              <Link className="ed-inline-link" to="/sustainability">
+                <span>{t('home.sustain.fullReportLink')}</span>
+                <span aria-hidden="true">→</span>
+              </Link>
+            </div>
           </div>
 
           <figure className="hp-band hp-reveal">
@@ -398,6 +630,68 @@ export default function HomePage() {
                 </li>
               ))}
             </ol>
+          </div>
+        </section>
+
+        {/* --- Delta-inspired Coffee Journal Dispatches & Business Solutions Strip --- */}
+        <section className="hp-section hp-section--foam" id="nhat-ky">
+          <div className="hp-shell">
+            <div className="hp-section__head">
+              <h2>{t('home.journalPreview.head')}</h2>
+              <Link className="ed-inline-link" to="/journal">
+                <span>{t('home.journalPreview.allLink')}</span>
+                <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+
+            <div className="ed-home-journal">
+              <article className="ed-home-journal__lead">
+                <Link to={`/journal?article=${leadJournal.slug}`} className="ed-home-journal__img">
+                  <img src={leadJournal.img} alt={leadJournal.title[lang]} loading="lazy" />
+                </Link>
+                <p className="ed-story-meta">
+                  <span>{t(`journal.categories.${leadJournal.cat}`)}</span>
+                  <span>—</span>
+                  <time dateTime={leadJournal.date}>{leadJournal.date}</time>
+                </p>
+                <h3>
+                  <Link to={`/journal?article=${leadJournal.slug}`}>
+                    {leadJournal.title[lang]}
+                  </Link>
+                </h3>
+                <p>{leadJournal.excerpt[lang]}</p>
+              </article>
+
+              <ul className="ed-home-journal__list">
+                {sideJournals.map((item) => (
+                  <li key={item.slug}>
+                    <p className="ed-story-meta">
+                      <span>{t(`journal.categories.${item.cat}`)}</span>
+                      <span>—</span>
+                      <time dateTime={item.date}>{item.date}</time>
+                    </p>
+                    <h3>
+                      <Link to={`/journal?article=${item.slug}`}>{item.title[lang]}</Link>
+                    </h3>
+                    <p>{item.excerpt[lang]}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="ed-b2b-strip">
+              <div className="ed-b2b-strip__copy">
+                <h3>{t('home.b2bBanner.head')}</h3>
+                <p>{t('home.b2bBanner.body')}</p>
+              </div>
+              <div className="ed-b2b-strip__meta">
+                <span>{t('home.b2bBanner.statA')}</span>
+                <span>{t('home.b2bBanner.statB')}</span>
+                <Link className="hp-btn hp-btn--primary" to="/business-solutions">
+                  {t('home.b2bBanner.cta')}
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -462,11 +756,23 @@ export default function HomePage() {
               <div className="hp-form__row">
                 <div className="hp-field">
                   <label htmlFor="hp-name">{t('home.book.name')}</label>
-                  <input id="hp-name" name="name" type="text" placeholder={t('home.book.namePlaceholder')} required />
+                  <input
+                    id="hp-name"
+                    name="name"
+                    type="text"
+                    placeholder={t('home.book.namePlaceholder')}
+                    required
+                  />
                 </div>
                 <div className="hp-field">
                   <label htmlFor="hp-phone">{t('home.book.phone')}</label>
-                  <input id="hp-phone" name="phone" type="tel" placeholder={t('home.book.phonePlaceholder')} required />
+                  <input
+                    id="hp-phone"
+                    name="phone"
+                    type="tel"
+                    placeholder={t('home.book.phonePlaceholder')}
+                    required
+                  />
                 </div>
               </div>
               <button className="hp-btn hp-btn--brass hp-btn--block" type="submit">
@@ -548,49 +854,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="hp-footer">
-        <div className="hp-shell">
-          <div className="hp-footer__grid">
-            <div>
-              <p className="hp-brand__name">An Roastery</p>
-              <p>{t('footer.tagline')}</p>
-            </div>
-            <div>
-              <h3>{t('footer.hoursTitle')}</h3>
-              <ul className="hp-footer__hours">
-                {t('footer.hours').map((row) => (
-                  <li key={row.label}>
-                    <span>{row.label}</span>
-                    <strong>{row.value}</strong>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3>{t('footer.branchesTitle')}</h3>
-              <ul>
-                <li>12 Hoàng Hoa Thám, Tân Bình, TP.HCM</li>
-                <li>06 Trần Cao Vân, Quận 3, TP.HCM</li>
-                <li>48 Trần Thái Tông, Cầu Giấy, Hà Nội</li>
-              </ul>
-            </div>
-            <div>
-              <h3>{t('footer.contactTitle')}</h3>
-              <ul>
-                <li>{t('footer.bookingLine')}</li>
-                <li>{t('footer.emailLine')}</li>
-              </ul>
-            </div>
-          </div>
-          <div className="hp-footer__bottom">
-            <p>© {new Date().getFullYear()} An Roastery</p>
-            <div className="hp-footer__legal">
-              <a href="#top">{t('footer.privacy')}</a>
-              <a href="#top">{t('footer.terms')}</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }
