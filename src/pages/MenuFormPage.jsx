@@ -167,7 +167,7 @@ export default function MenuFormPage() {
             <label className="flex items-center gap-2 cursor-pointer font-label-md font-bold text-primary">
               <input
                 type="checkbox"
-                className="w-5 h-5 accent-[#2c1810]"
+                className="w-5 h-5 accent-[#2b1d14]"
                 checked={!!form.isAvailable}
                 onChange={(e) => setField('isAvailable', e.target.checked)}
               />

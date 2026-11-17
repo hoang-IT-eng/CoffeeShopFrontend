@@ -122,7 +122,7 @@ export default function LoginPage() {
               <label className="flex items-center gap-2 cursor-pointer font-label-md text-label-md text-on-surface-variant">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 accent-[#2c1810] rounded"
+                  className="w-4 h-4 accent-[#2b1d14] rounded"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />

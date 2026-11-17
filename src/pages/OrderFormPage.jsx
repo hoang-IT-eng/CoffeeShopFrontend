@@ -199,7 +199,7 @@ export default function OrderFormPage() {
                 ref={searchRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-16 py-space-sm bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-bright focus:shadow-[0_0_0_2px_#fe932c] transition-all"
+                className="w-full pl-10 pr-16 py-space-sm bg-surface-container-low rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-bright focus:shadow-[0_0_0_2px_#b5835a] transition-all"
                 placeholder="Tìm món nhanh (F2) hoặc mã viết tắt: CFM, BAX, TDO..."
                 type="text"
               />

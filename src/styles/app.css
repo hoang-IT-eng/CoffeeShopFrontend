@@ -215,6 +215,17 @@ html[data-theme="dark"] {
   background: color-mix(in srgb, var(--an-cream) 14%, transparent);
 }
 
+.ember-nav-label {
+  margin: 16px 11px 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--an-caramel) 62%, var(--an-sidebar-muted));
+}
+
+.ember-nav-label:first-child {
+  margin-top: 4px;
+}
+
 .ember-side-foot {
   display: flex;
   flex-direction: column;

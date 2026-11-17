@@ -38,6 +38,61 @@ const MENU = [
   }
 ];
 
+const SUSTAIN_STATS = [
+  { value: 42, suffix: '', label: 'hộ nông liên kết tại Cầu Đất & Bảo Lộc' },
+  { value: 1650, suffix: ' m', label: 'độ cao trung bình của vườn cà phê' },
+  { value: 92, suffix: '%', label: 'quả được hái chín đỏ hoàn toàn bằng tay' },
+  { value: 14, suffix: '', label: 'ngày tối đa từ mẻ rang đến lúc lên quầy' }
+];
+
+const SUSTAIN_CHAPTERS = [
+  {
+    index: '01 / 03',
+    title: 'Người trồng',
+    heading: 'Giá trị bắt đầu từ bàn tay hái quả',
+    body: 'An Roastery mua trực tiếp từ các hộ nông liên kết, trả cao hơn giá thị trường cho phần quả chín đỏ được tuyển tay. Lịch thu mua được chốt trước vụ mùa để nông hộ yên tâm chăm vườn thay vì chạy theo sản lượng.'
+  },
+  {
+    index: '02 / 03',
+    title: 'Đất & vườn',
+    heading: 'Canh tác nhẹ tay với đất đồi',
+    body: 'Vườn liên kết giữ lại hàng cây che bóng, hạn chế thuốc trừ cỏ và ủ vỏ cà phê làm phân hữu cơ ngay tại chỗ. Đất khỏe thì cây khỏe — và hương vị trong tách là kết quả cuối cùng của chuỗi đó.'
+  },
+  {
+    index: '03 / 03',
+    title: 'Quầy bar',
+    heading: 'Ít lãng phí hơn ở mỗi ca phục vụ',
+    body: 'Bã cà phê sau pha được gom cho các vườn rau đô thị, sữa tươi được chia ca theo lượng khách dự kiến và bánh cuối ngày giảm giá thay vì bỏ đi. Mỗi quán nhỏ làm phần của mình, đều đặn mỗi ngày.'
+  }
+];
+
+const JOURNEY = [
+  {
+    phase: 'Giai đoạn I',
+    when: 'Tháng 11 – 2',
+    title: 'Thu hái chọn lọc',
+    body: 'Chỉ quả đỏ mọng được hái, theo nhiều đợt trong cùng một vụ để không quả nào bị hái xanh.'
+  },
+  {
+    phase: 'Giai đoạn II',
+    when: '30 ngày',
+    title: 'Sơ chế & phơi giàn',
+    body: 'Honey và natural phơi trên giàn nhà kính, đảo đều tay cho đến khi độ ẩm hạt ổn định.'
+  },
+  {
+    phase: 'Giai đoạn III',
+    when: 'Ngày 0',
+    title: 'Rang mẻ nhỏ',
+    body: 'Mỗi mẻ dưới 5kg trên máy Giesen W6A, đồ thị rang được lưu lại để đối chiếu từng lần.'
+  },
+  {
+    phase: 'Giai đoạn IV',
+    when: 'Ngày 2 – 14',
+    title: 'Lên quầy bar',
+    body: 'Hạt nghỉ đủ ngày sau rang rồi mới xay pha — khoảng thời gian cho hương vị tròn nhất.'
+  }
+];
+
 const COMMITMENTS = [
   {
     title: 'Hái chín bằng tay',
@@ -97,6 +152,37 @@ export default function HomePage() {
       item.style.setProperty('--hp-i', String(index));
       seen.observe(item);
     });
+    root.querySelectorAll('.hp-reveal').forEach((item, index) => {
+      item.style.setProperty('--hp-i', String(index % 6));
+      seen.observe(item);
+    });
+
+    const wholeFmt = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
+    const counted = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          counted.unobserve(entry.target);
+          const node = entry.target;
+          const target = Number(node.dataset.count) || 0;
+          if (reduce) {
+            node.textContent = wholeFmt.format(target);
+            return;
+          }
+          const started = performance.now();
+          const duration = 1500;
+          const stepCount = (now) => {
+            const t = Math.min(1, (now - started) / duration);
+            const eased = 1 - Math.pow(1 - t, 3);
+            node.textContent = wholeFmt.format(Math.round(target * eased));
+            if (t < 1) requestAnimationFrame(stepCount);
+          };
+          requestAnimationFrame(stepCount);
+        });
+      },
+      { threshold: 0.4 }
+    );
+    root.querySelectorAll('.hp-stat__num[data-count]').forEach((node) => counted.observe(node));
 
     const onAnchor = (event) => {
       const link = event.target.closest('a[href^="#"]');
@@ -121,6 +207,7 @@ export default function HomePage() {
         window.removeEventListener('scroll', onScroll);
         root.removeEventListener('click', onAnchor);
         seen.disconnect();
+        counted.disconnect();
       };
     }
 
@@ -146,6 +233,7 @@ export default function HomePage() {
       gsap.ticker.remove(tick);
       root.removeEventListener('click', onAnchor);
       seen.disconnect();
+      counted.disconnect();
       lenis.destroy();
       document.documentElement.classList.remove('lenis');
     };
@@ -179,6 +267,7 @@ export default function HomePage() {
             <a href="#thuc-don">Thực đơn</a>
             <a href="#dat-ban">Đặt bàn</a>
             <a href="#cau-chuyen">Câu chuyện hạt</a>
+            <a href="#ben-vung">Bền vững</a>
             <a href="#khong-gian">Không gian</a>
             <Link to="/login">Quản trị / POS</Link>
           </nav>
@@ -327,6 +416,82 @@ export default function HomePage() {
                 ))}
               </ol>
             </div>
+          </div>
+        </section>
+
+        <section className="hp-section hp-sustain" id="ben-vung">
+          <div className="hp-shell">
+            <div className="hp-section__head hp-reveal">
+              <h2>
+                Từ đồi Cầu Đất <em>đến</em> tách cà phê trên tay bạn
+              </h2>
+              <p>
+                Bền vững ở An Roastery không phải khẩu hiệu treo tường. Đó là cách quán mua hạt,
+                cách vườn được chăm và cách mỗi ca phục vụ dùng vừa đủ nguyên liệu.
+              </p>
+            </div>
+
+            <div className="hp-stats hp-reveal" role="list" aria-label="Con số bền vững">
+              {SUSTAIN_STATS.map((stat) => (
+                <div className="hp-stat" role="listitem" key={stat.label}>
+                  <p className="hp-stat__value">
+                    <span className="hp-stat__num" data-count={stat.value}>0</span>
+                    <span className="hp-stat__suffix">{stat.suffix}</span>
+                  </p>
+                  <p className="hp-stat__label">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="hp-chapters">
+              {SUSTAIN_CHAPTERS.map((chapter) => (
+                <article className="hp-chapter hp-reveal" key={chapter.index}>
+                  <p className="hp-chapter__index">{chapter.index}</p>
+                  <div>
+                    <p className="hp-chapter__title">{chapter.title}</p>
+                    <h3>{chapter.heading}</h3>
+                    <p className="hp-chapter__body">{chapter.body}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <figure className="hp-band hp-reveal">
+            <picture>
+              <source srcSet="/scroll/2-san-phoi.avif" type="image/avif" />
+              <source srcSet="/scroll/2-san-phoi.webp" type="image/webp" />
+              <img
+                className="hp-drift"
+                data-drift="0.05"
+                src="/scroll/2-san-phoi.jpg"
+                alt="Sân phơi cà phê trên đồi Cầu Đất"
+                width={1600}
+                height={900}
+                loading="lazy"
+              />
+            </picture>
+            <figcaption className="hp-shell">
+              <strong>Sân phơi giàn nhà kính</strong>
+              <span>Nơi hạt cà phê trải qua 30 ngày chậm rãi trước khi về xưởng rang.</span>
+            </figcaption>
+          </figure>
+
+          <div className="hp-shell">
+            <div className="hp-section__head hp-section__head--tight hp-reveal">
+              <h2>Hành trình của một hạt</h2>
+              <p>Bốn giai đoạn, một vụ mùa — theo đúng nhịp mà quán vẫn làm từ ngày đầu.</p>
+            </div>
+            <ol className="hp-journey hp-reveal">
+              {JOURNEY.map((step) => (
+                <li key={step.phase}>
+                  <p className="hp-journey__phase">{step.phase}</p>
+                  <p className="hp-journey__when">{step.when}</p>
+                  <h3>{step.title}</h3>
+                  <p className="hp-journey__body">{step.body}</p>
+                </li>
+              ))}
+            </ol>
           </div>
         </section>
 

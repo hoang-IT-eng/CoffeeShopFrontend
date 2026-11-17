@@ -94,6 +94,7 @@ export default function Layout() {
         </div>
 
         <nav className="ember-nav" onClick={() => setOpen(false)}>
+          <p className="ember-nav-label">Vận hành</p>
           <NavLink className={linkClass} end to="/dashboard">
             <span className="material-symbols-outlined">grid_view</span>
             <span>Tổng quan</span>
@@ -119,7 +120,7 @@ export default function Layout() {
             <span>Ca phục vụ</span>
           </NavLink>
 
-          {(admin || cashier) && <div className="ember-rule" />}
+          {(admin || cashier) && <p className="ember-nav-label">Quản trị</p>}
 
           {admin && (
             <NavLink className={linkClass} end to="/menu">

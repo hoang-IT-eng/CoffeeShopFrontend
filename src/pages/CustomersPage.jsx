@@ -8,27 +8,27 @@ function tierStyle(level = 'Bronze') {
     return {
       label: 'Kim Cương',
       icon: 'diamond',
-      badge: 'bg-purple-100 text-[#6B21A8]'
+      badge: 'bg-[#2b1d14] text-[#f5ecdf]'
     };
   }
   if (l.includes('gold') || l.includes('vàng')) {
     return {
       label: 'Hạng Vàng',
       icon: 'workspace_premium',
-      badge: 'bg-amber-100 text-[#92400E]'
+      badge: 'bg-[#f0dcbc] text-[#7c5227]'
     };
   }
   if (l.includes('silver') || l.includes('bạc')) {
     return {
       label: 'Hạng Bạc',
       icon: 'military_tech',
-      badge: 'bg-slate-200 text-slate-700'
+      badge: 'bg-[#e9e2d6] text-[#5a534c]'
     };
   }
   return {
     label: 'Đồng / Member',
     icon: 'shield',
-    badge: 'bg-orange-100 text-[#9A3412]'
+    badge: 'bg-[#f3e3cf] text-[#8a5a2b]'
   };
 }
 
@@ -254,7 +254,7 @@ export default function CustomersPage() {
                 <div className="flex items-center gap-space-xs flex-wrap">
                   {[
                     { id: 'all', label: `Tất cả (${customers.length})`, dot: '' },
-                    { id: 'Diamond', label: 'Kim Cương', dot: 'bg-[#7C3AED]' },
+                    { id: 'Diamond', label: 'Kim Cương', dot: 'bg-primary' },
                     { id: 'Gold', label: 'Vàng', dot: 'bg-secondary-container' },
                     { id: 'Silver', label: 'Bạc', dot: 'bg-outline' },
                     { id: 'Bronze', label: 'Đồng / Member', dot: 'bg-on-tertiary-fixed-variant' }
@@ -570,15 +570,15 @@ export default function CustomersPage() {
                     <span className="text-[11px] text-amber-800 font-bold">-5% All Orders</span>
                   </div>
                 </div>
-                <div className="p-space-sm rounded-lg bg-purple-50/70 flex flex-col gap-1">
+                <div className="p-space-sm rounded-lg bg-[#f7ecd9] flex flex-col gap-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-label-sm text-label-sm text-purple-900 font-bold flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px] text-purple-600">
+                    <span className="font-label-sm text-label-sm text-[#2b1d14] font-bold flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[16px] text-[#9a6b3a]">
                         diamond
                       </span>
                       Hạng Kim Cương (&gt; 4.000.000đ)
                     </span>
-                    <span className="text-[11px] text-purple-800 font-bold">
+                    <span className="text-[11px] text-[#7c5227] font-bold">
                       -10% + Free Upsize
                     </span>
                   </div>

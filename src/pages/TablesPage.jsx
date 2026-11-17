@@ -102,7 +102,7 @@ export default function TablesPage() {
         <div className="flex items-center gap-space-lg flex-wrap">
           <div className="flex items-center gap-space-md text-label-sm font-label-sm">
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-[#16a34a]" />
+              <span className="w-3 h-3 rounded-full bg-[#3d6b4f]" />
               <span className="text-on-surface font-semibold">{emptyCount} Trống</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -176,7 +176,7 @@ export default function TablesPage() {
                     onClick={() => setSelectedId(table.id)}
                     style={
                       isSelected
-                        ? { boxShadow: '0 0 0 2.5px #2c1810, 0 4px 16px rgba(44,24,16,0.12)' }
+                        ? { boxShadow: '0 0 0 2.5px #2b1d14, 0 4px 16px rgba(44,24,16,0.12)' }
                         : undefined
                     }
                     className="bg-surface-container-low hover:bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md cursor-pointer flex flex-col justify-between h-[190px] transition-all group"
@@ -190,8 +190,8 @@ export default function TablesPage() {
                           {table.area} • 4 ghế
                         </span>
                       </div>
-                      <span className="px-space-sm py-1 rounded-md bg-[#dcfce7] text-[#15803d] font-label-sm text-label-sm font-bold flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-[#16a34a]" />
+                      <span className="px-space-sm py-1 rounded-md bg-[#e3ecdf] text-[#3d6b4f] font-label-sm text-label-sm font-bold flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-[#3d6b4f]" />
                         Trống
                       </span>
                     </div>
@@ -214,7 +214,7 @@ export default function TablesPage() {
                     isSelected
                       ? { boxShadow: '0 0 0 2.5px #ba1a1a, 0 4px 16px rgba(186, 26, 26, 0.15)' }
                       : isReserved
-                      ? { boxShadow: '0 0 0 1.5px #fe932c' }
+                      ? { boxShadow: '0 0 0 1.5px #b5835a' }
                       : undefined
                   }
                   className="relative bg-surface-container-lowest rounded-xl p-space-md shadow-md cursor-pointer flex flex-col justify-between h-[190px] transition-all hover:scale-[1.01]"
@@ -270,7 +270,7 @@ export default function TablesPage() {
                         {tableOrder ? vnd(tableOrder.total) : '98.000đ'}
                       </span>
                     </div>
-                    <span className="px-space-xs py-1 rounded bg-[#dcfce7] text-[#15803d] font-label-sm text-label-sm font-semibold flex items-center gap-0.5">
+                    <span className="px-space-xs py-1 rounded bg-[#e3ecdf] text-[#3d6b4f] font-label-sm text-label-sm font-semibold flex items-center gap-0.5">
                       <span className="material-symbols-outlined text-[14px]">done_all</span>
                       {tableOrder?.details?.length || 3} món
                     </span>
@@ -420,7 +420,7 @@ export default function TablesPage() {
                 <div className="flex flex-col items-center bg-surface-container-low p-space-md rounded-xl">
                   <div className="flex items-center justify-between w-full mb-space-sm">
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#16a34a] animate-pulse" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#3d6b4f] animate-pulse" />
                       <span className="font-label-sm text-label-sm text-on-surface font-semibold">
                         Cổng VietQR Pro kết nối tức thì
                       </span>
@@ -446,7 +446,7 @@ export default function TablesPage() {
                       <rect fill="currentColor" height="12" width="12" x="60" y="42" />
                       <rect fill="currentColor" height="15" width="8" x="90" y="70" />
                       <rect fill="currentColor" height="15" width="15" x="85" y="95" />
-                      <rect fill="#fe932c" height="24" rx="6" width="24" x="48" y="48" />
+                      <rect fill="#b5835a" height="24" rx="6" width="24" x="48" y="48" />
                       <circle cx="60" cy="60" fill="#fff" r="5" />
                     </svg>
                     <div className="mt-2 text-center">
@@ -485,10 +485,10 @@ export default function TablesPage() {
                       </span>
                     </div>
                     <div className="flex flex-col text-right">
-                      <span className="font-label-sm text-label-sm text-[#15803d] font-semibold">
+                      <span className="font-label-sm text-label-sm text-[#3d6b4f] font-semibold">
                         Tiền thừa thối khách:
                       </span>
-                      <span className="font-price-display-md text-price-display-md text-[#15803d] font-black">
+                      <span className="font-price-display-md text-price-display-md text-[#3d6b4f] font-black">
                         {vnd(changeReturn)}
                       </span>
                     </div>
@@ -504,7 +504,7 @@ export default function TablesPage() {
                   <span className="font-label-lg text-label-lg font-bold text-primary">
                     Chạm thẻ Chip hoặc Quẹt thẻ
                   </span>
-                  <span className="px-space-md py-1 rounded bg-[#dbeafe] text-[#1e40af] font-label-sm text-label-sm font-semibold">
+                  <span className="px-space-md py-1 rounded bg-[#f0dcbc] text-[#7c5227] font-label-sm text-label-sm font-semibold">
                     Thiết bị kết nối: POS-TERMINAL-01 (Bluetooth OK)
                   </span>
                 </div>

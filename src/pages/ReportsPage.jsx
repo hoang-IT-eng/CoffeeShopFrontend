@@ -402,22 +402,22 @@ export default function ReportsPage() {
                       y1="120"
                       y2="120"
                     />
-                    <rect fill="#ffdcc3" height="60" rx="3" width="22" x="25" y="80" />
-                    <rect fill="#2c1810" height="130" rx="3" width="22" x="65" y="10" />
-                    <rect fill="#2c1810" height="115" rx="3" width="22" x="105" y="25" />
-                    <rect fill="#dcdad4" height="70" rx="3" width="22" x="145" y="70" />
-                    <rect fill="#dcdad4" height="50" rx="3" width="22" x="185" y="90" />
-                    <rect fill="#ffdcc3" height="65" rx="3" width="22" x="225" y="75" />
-                    <rect fill="#fe932c" height="105" rx="3" width="22" x="265" y="35" />
-                    <rect fill="#fe932c" height="110" rx="3" width="22" x="305" y="30" />
-                    <rect fill="#fe932c" height="95" rx="3" width="22" x="345" y="45" />
-                    <rect fill="#ffdcc3" height="55" rx="3" width="22" x="385" y="85" />
-                    <rect fill="#dcdad4" height="40" rx="3" width="22" x="425" y="100" />
-                    <rect fill="#dcdad4" height="60" rx="3" width="22" x="465" y="80" />
-                    <rect fill="#ffdcc3" height="80" rx="3" width="22" x="505" y="60" />
-                    <rect fill="#2c1810" height="95" rx="3" width="22" x="545" y="45" />
-                    <rect fill="#2c1810" height="85" rx="3" width="22" x="585" y="55" />
-                    <rect fill="#dcdad4" height="30" rx="3" width="22" x="625" y="110" />
+                    <rect fill="#f0dcbc" height="60" rx="3" width="22" x="25" y="80" />
+                    <rect fill="#2b1d14" height="130" rx="3" width="22" x="65" y="10" />
+                    <rect fill="#2b1d14" height="115" rx="3" width="22" x="105" y="25" />
+                    <rect fill="#e2d4c4" height="70" rx="3" width="22" x="145" y="70" />
+                    <rect fill="#e2d4c4" height="50" rx="3" width="22" x="185" y="90" />
+                    <rect fill="#f0dcbc" height="65" rx="3" width="22" x="225" y="75" />
+                    <rect fill="#b5835a" height="105" rx="3" width="22" x="265" y="35" />
+                    <rect fill="#b5835a" height="110" rx="3" width="22" x="305" y="30" />
+                    <rect fill="#b5835a" height="95" rx="3" width="22" x="345" y="45" />
+                    <rect fill="#f0dcbc" height="55" rx="3" width="22" x="385" y="85" />
+                    <rect fill="#e2d4c4" height="40" rx="3" width="22" x="425" y="100" />
+                    <rect fill="#e2d4c4" height="60" rx="3" width="22" x="465" y="80" />
+                    <rect fill="#f0dcbc" height="80" rx="3" width="22" x="505" y="60" />
+                    <rect fill="#2b1d14" height="95" rx="3" width="22" x="545" y="45" />
+                    <rect fill="#2b1d14" height="85" rx="3" width="22" x="585" y="55" />
+                    <rect fill="#e2d4c4" height="30" rx="3" width="22" x="625" y="110" />
                   </svg>
                 </div>
                 <div className="flex justify-between font-label-sm text-label-sm text-on-surface-variant px-2">
@@ -459,14 +459,14 @@ export default function ReportsPage() {
                 <svg className="w-full h-full" fill="none" viewBox="0 0 650 140">
                   <defs>
                     <linearGradient id="revenueGlow" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="#fe932c" stopOpacity="0.35" />
-                      <stop offset="100%" stopColor="#fe932c" stopOpacity="0.0" />
+                      <stop offset="0%" stopColor="#b5835a" stopOpacity="0.35" />
+                      <stop offset="100%" stopColor="#b5835a" stopOpacity="0.0" />
                     </linearGradient>
                   </defs>
                   <path
                     d="M 20 95 Q 110 80, 200 90 T 380 70 T 520 60 T 630 40"
                     fill="none"
-                    stroke="#dcdad4"
+                    stroke="#e2d4c4"
                     strokeDasharray="4 4"
                     strokeWidth="2"
                   />
@@ -477,18 +477,18 @@ export default function ReportsPage() {
                   <path
                     d="M 20 85 Q 110 65, 200 70 T 380 45 T 520 30 T 630 18"
                     fill="none"
-                    stroke="#fe932c"
+                    stroke="#b5835a"
                     strokeWidth="3.5"
                   />
-                  <circle cx="200" cy="70" fill="#2c1810" r="4" />
-                  <circle cx="380" cy="45" fill="#2c1810" r="4" />
-                  <circle cx="520" cy="30" fill="#2c1810" r="4" />
+                  <circle cx="200" cy="70" fill="#2b1d14" r="4" />
+                  <circle cx="380" cy="45" fill="#2b1d14" r="4" />
+                  <circle cx="520" cy="30" fill="#2b1d14" r="4" />
                   <circle
                     cx="630"
                     cy="18"
-                    fill="#fe932c"
+                    fill="#b5835a"
                     r="5"
-                    stroke="#2c1810"
+                    stroke="#2b1d14"
                     strokeWidth="2"
                   />
                 </svg>
@@ -538,7 +538,7 @@ export default function ReportsPage() {
                       cy="50"
                       fill="transparent"
                       r="38"
-                      stroke="#ebe8e2"
+                      stroke="#efe4d4"
                       strokeWidth="14"
                     />
                     <circle
@@ -546,7 +546,7 @@ export default function ReportsPage() {
                       cy="50"
                       fill="transparent"
                       r="38"
-                      stroke="#fe932c"
+                      stroke="#b5835a"
                       strokeDasharray="238.7"
                       strokeDashoffset="89.7"
                       strokeWidth="14"
@@ -556,7 +556,7 @@ export default function ReportsPage() {
                       cy="50"
                       fill="transparent"
                       r="38"
-                      stroke="#2c1810"
+                      stroke="#2b1d14"
                       strokeDasharray="238.7"
                       strokeDashoffset="238.7"
                       strokeWidth="14"
@@ -566,7 +566,7 @@ export default function ReportsPage() {
                       cy="50"
                       fill="transparent"
                       r="38"
-                      stroke="#ffb77d"
+                      stroke="#dcae7c"
                       strokeDasharray="238.7"
                       strokeDashoffset="218.4"
                       strokeWidth="14"
