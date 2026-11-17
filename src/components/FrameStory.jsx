@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useLang } from '../i18n';
 import '../styles/frame-story.css';
 
 /**
@@ -31,8 +32,24 @@ const toProgress = (frame) =>
 const toFrameIndex = (progress) =>
   clamp01((progress - HOLD_START) / (1 - HOLD_START - HOLD_END)) * (COUNT - 1);
 
-const whole = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
-const tenth = new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+/* Locale hiển thị số — component cập nhật theo ngôn ngữ đang chọn. */
+let storyLocale = 'vi-VN';
+const fmtCache = {};
+function storyFmt(kind) {
+  const key = `${storyLocale}:${kind}`;
+  if (!fmtCache[key]) {
+    fmtCache[key] =
+      kind === 'whole'
+        ? new Intl.NumberFormat(storyLocale, { maximumFractionDigits: 0 })
+        : new Intl.NumberFormat(storyLocale, {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+          });
+  }
+  return fmtCache[key];
+}
+const whole = { format: (n) => storyFmt('whole').format(n) };
+const tenth = { format: (n) => storyFmt('tenth').format(n) };
 
 /**
  * `from`/`to` là số frame của video gốc (coffee_scroll_demo/frames), khớp với cảnh thật.
@@ -146,6 +163,22 @@ export default function FrameStory() {
   const stageRef = useRef(null);
   const canvasRef = useRef(null);
   const readoutRef = useRef(null);
+  const { lang, t } = useLang();
+  storyLocale = lang === 'vi' ? 'vi-VN' : 'en-US';
+  const texts = t('story.chapters');
+  const chapters = CHAPTERS.map((chapter) => {
+    const local = texts[chapter.id] || {};
+    return {
+      ...chapter,
+      label: local.label ?? chapter.label,
+      body: local.body ?? chapter.body,
+      caption: local.caption ?? chapter.caption,
+      unit: local.unit ?? chapter.unit,
+      heading: local.heading ?? chapter.heading
+    };
+  });
+  const chaptersRef = useRef(chapters);
+  chaptersRef.current = chapters;
 
   useEffect(() => {
     const track = trackRef.current;
@@ -253,7 +286,7 @@ export default function FrameStory() {
     const setActive = (index) => {
       if (index === activeIndex) return;
       activeIndex = index;
-      const chapter = CHAPTERS[index];
+      const chapter = chaptersRef.current[index];
       unitEl.textContent = chapter.unit;
       captionEl.textContent = chapter.caption;
       railEls.forEach((el, railIndex) => {
@@ -299,7 +332,7 @@ export default function FrameStory() {
 
       setActive(nextActive);
       const win = WINDOWS[nextActive];
-      const value = CHAPTERS[nextActive].value(clamp01((progress - win.start) / (win.end - win.start)));
+      const value = chaptersRef.current[nextActive].value(clamp01((progress - win.start) / (win.end - win.start)));
       if (value !== lastValue) {
         valueEl.textContent = value;
         lastValue = value;
@@ -404,7 +437,7 @@ export default function FrameStory() {
         <div className="fs-grain" aria-hidden="true" />
 
         <div className="fs-copy">
-          {CHAPTERS.map((chapter, index) => (
+          {chapters.map((chapter, index) => (
             <article
               className={`fs-chapter fs-chapter--${chapter.side}${index === 0 ? ' fs-chapter--opening' : ''}`}
               data-chapter={chapter.id}
@@ -430,8 +463,8 @@ export default function FrameStory() {
               </p>
               {chapter.actions && (
                 <div className="fs-actions">
-                  <a className="fs-btn fs-btn--solid" href="#thuc-don">Xem thực đơn</a>
-                  <a className="fs-btn" href="#dat-ban">Đặt bàn</a>
+                  <a className="fs-btn fs-btn--solid" href="#thuc-don">{t('story.viewMenu')}</a>
+                  <a className="fs-btn" href="#dat-ban">{t('story.book')}</a>
                 </div>
               )}
             </article>
@@ -440,18 +473,18 @@ export default function FrameStory() {
 
         <div className="fs-readout" ref={readoutRef} aria-hidden="true">
           <p className="fs-readout__figure">
-            <span className="fs-readout__value">{CHAPTERS[0].value(0)}</span>
-            <span className="fs-readout__unit">{CHAPTERS[0].unit}</span>
+            <span className="fs-readout__value">{chapters[0].value(0)}</span>
+            <span className="fs-readout__unit">{chapters[0].unit}</span>
           </p>
-          <p className="fs-readout__caption">{CHAPTERS[0].caption}</p>
+          <p className="fs-readout__caption">{chapters[0].caption}</p>
         </div>
 
-        <nav className="fs-rail" aria-label="Các chặng trong hành trình">
+        <nav className="fs-rail" aria-label={t('story.railLabel')}>
           <span className="fs-rail__track" aria-hidden="true">
             <span className="fs-rail__fill" />
           </span>
           <ol>
-            {CHAPTERS.map((chapter, index) => (
+            {chapters.map((chapter, index) => (
               <li key={chapter.id} style={{ '--at': WINDOWS[index].start }}>
                 <a
                   href={`#hanh-trinh-${chapter.id}`}
@@ -468,7 +501,7 @@ export default function FrameStory() {
 
         <p className="fs-cue" aria-hidden="true">
           <span className="fs-cue__line" />
-          Cuộn xuống để xem hạt đi từ đồi tới tách
+          {t('story.cue')}
         </p>
         <span className="fs-bar" aria-hidden="true" />
       </div>

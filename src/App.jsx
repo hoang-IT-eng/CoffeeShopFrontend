@@ -1,8 +1,11 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import { hasRole, useAuth } from './auth';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
+import ProductsPage from './pages/ProductsPage';
+import CoffeeCulturePage from './pages/CoffeeCulturePage';
 import DashboardPage from './pages/DashboardPage';
 import ShiftPage from './pages/ShiftPage';
 import OrdersPage from './pages/OrdersPage';
@@ -52,10 +55,18 @@ function RequireRole({ roles, children }) {
   return children;
 }
 
+const PUBLIC_PATHS = ['/', '/products', '/coffee-culture'];
+
 export default function App() {
+  const { pathname } = useLocation();
+  const showSwitcher = PUBLIC_PATHS.includes(pathname);
   return (
-    <Routes>
+    <>
+      {showSwitcher && <LanguageSwitcher />}
+      <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/products" element={<ProductsPage />} />
+      <Route path="/coffee-culture" element={<CoffeeCulturePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route element={<RequireAuth><Layout /></RequireAuth>}>
         <Route path="dashboard" element={<DashboardPage />} />
@@ -78,6 +89,7 @@ export default function App() {
         <Route path="reports" element={<RequireRole roles={['Admin']}><ReportsPage /></RequireRole>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }

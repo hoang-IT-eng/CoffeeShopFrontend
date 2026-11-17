@@ -3,119 +3,37 @@ import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import Lenis from 'lenis';
 import FrameStory from '../components/FrameStory';
+import { useLang } from '../i18n';
 import '../styles/homepage.css';
 
-const MENU = [
-  {
-    name: 'Cà Phê Muối Xứ Huế',
-    desc: 'Kem muối biển béo ngậy phủ trên nền Robusta rang mộc đậm đà.',
-    price: '45.000đ',
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC117OxdRy2nel927BqAp30l75gOBC-YE17MqQYUgdaZa9lf6ToZvvXMpBY5h7ZB82Z7XXYNx3LZs1ufRC5KnqV8aWg6hM4f0zdjMy4OmtvhMZOAd8fB4H9YwoLVZH8HcGJJpzK9hW8L1d4iNRDzKe5FqwwxvKOchxlNvGjxKR2-xR2QNdjQ250ifqN47goKwYOhlbwrBaTvnPxDlmpNanXrcJQy_g8iTkwPUX8julgRcA9bvMOChJaFQ'
-  },
-  {
-    name: 'Cold Brew Cam Vàng',
-    desc: 'Arabica Cầu Đất ngâm lạnh 24 giờ hòa quyện tép cam tươi.',
-    price: '52.000đ',
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-S8GufDfjMVNHJZU6eEYPKpWeY4hG8FlE6dJgfZ_En81MYwDBRP2C_ipMlLS2qFq-GHUqhLNN3e3pFMrCxeaYGa_B_KQRk1M43ZFDFmu5imzNKZiis_WIVTzrTXsPhcwB0h5JQf45IQxfTFDmtqkuC1-TNe-QE37eLGltHQULkfBi7DTrAwfXGG7SCzjjZxbaEpDJb3OXQPKkHCwtO9xLwiMvH-DvZcHO66sxhG3ASKCdnvh1V3EpjQ'
-  },
-  {
-    name: 'Bạc Xỉu 3 Tầng',
-    desc: 'Sữa đặc, sữa tươi Dalatmilk và espresso sánh đậm.',
-    price: '42.000đ',
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC3XmI8F4VFwDAPGLE4p5T1wVUse3TM6HBapgmR5G0LHgyqEQM8K1GOq_EWuIjmzckB4iOq_eoGJIhX_NTuG63cORveVtmWrCfMAX_Ie9e6Hb40V-13jwHVetI9UzuPvGGObJR4SkpEquSUcieehcTrz5Ta6mCjZTlEWBWJQX8U3u-G4xwGlZ13zq53BIFpt5t5iS7pOo1YXPyfclLHWAkW4ojy2-WTNY6aJKFkn6Ixoy_do2WBLxg-og'
-  },
-  {
-    name: 'Trà Đào Cam Sả',
-    desc: 'Trà đen ủ lạnh với đào tươi và sả đập dập.',
-    price: '48.000đ',
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAXM9OH7D2rKMTXz6Lo8PlKwn4wHGQkDE58G7cBHqa5yU4xUPIzIWttFnGq3-kmispic2gdKl4d7PNNT4K2Ubyet6jcTuWx8QdkOCmEoa6d3MPLPoskItQi6kRZtbEP2s1QpeK4dfnw6MZrW8NuVTurdrVi6MkpjmKcvRAPF56o0t7K7JRdopB1QYrTLnhVnuaUl6qb4rKrdrkgmfeUjtnHiul-axPjtGg1vbib_MmvOl7aYvAbP7vwyw'
-  },
-  {
-    name: 'Croissant Bơ Pháp',
-    desc: 'Vỏ giòn ngàn lớp, ruột mềm đượm hương bơ Bret.',
-    price: '38.000đ',
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAKOvn7OWVJ5avDEcc7_MXkkxBUqP89EDGxkJYf3-VC1UikBLlzjgdLhL4xGB9GknBKFiliZCXPLyJI4qP6sVgZadpCC2zKuni5f7Q6Z2fCDLWysHNnUeBxZgDBrfIQfdHyE_Oa4i_exB5mQy4lFCr5njWQ9wLgMx4yg8878BIpER2AXtz6IDUF-knDGr2PNS_u-dPvIxcditoK9c4U9ayRZPLQFf7u3lQInERB5Q7KtkHXj_B6DHKRUw'
-  }
+const MENU_IMGS = [
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuC117OxdRy2nel927BqAp30l75gOBC-YE17MqQYUgdaZa9lf6ToZvvXMpBY5h7ZB82Z7XXYNx3LZs1ufRC5KnqV8aWg6hM4f0zdjMy4OmtvhMZOAd8fB4H9YwoLVZH8HcGJJpzK9hW8L1d4iNRDzKe5FqwwxvKOchxlNvGjxKR2-xR2QNdjQ250ifqN47goKwYOhlbwrBaTvnPxDlmpNanXrcJQy_g8iTkwPUX8julgRcA9bvMOChJaFQ',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuB-S8GufDfjMVNHJZU6eEYPKpWeY4hG8FlE6dJgfZ_En81MYwDBRP2C_ipMlLS2qFq-GHUqhLNN3e3pFMrCxeaYGa_B_KQRk1M43ZFDFmu5imzNKZiis_WIVTzrTXsPhcwB0h5JQf45IQxfTFDmtqkuC1-TNe-QE37eLGltHQULkfBi7DTrAwfXGG7SCzjjZxbaEpDJb3OXQPKkHCwtO9xLwiMvH-DvZcHO66sxhG3ASKCdnvh1V3EpjQ',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuC3XmI8F4VFwDAPGLE4p5T1wVUse3TM6HBapgmR5G0LHgyqEQM8K1GOq_EWuIjmzckB4iOq_eoGJIhX_NTuG63cORveVtmWrCfMAX_Ie9e6Hb40V-13jwHVetI9UzuPvGGObJR4SkpEquSUcieehcTrz5Ta6mCjZTlEWBWJQX8U3u-G4xwGlZ13zq53BIFpt5t5iS7pOo1YXPyfclLHWAkW4ojy2-WTNY6aJKFkn6Ixoy_do2WBLxg-og',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuAXM9OH7D2rKMTXz6Lo8PlKwn4wHGQkDE58G7cBHqa5yU4xUPIzIWttFnGq3-kmispic2gdKl4d7PNNT4K2Ubyet6jcTuWx8QdkOCmEoa6d3MPLPoskItQi6kRZtbEP2s1QpeK4dfnw6MZrW8NuVTurdrVi6MkpjmKcvRAPF56o0t7K7JRdopB1QYrTLnhVnuaUl6qb4rKrdrkgmfeUjtnHiul-axPjtGg1vbib_MmvOl7aYvAbP7vwyw',
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuAKOvn7OWVJ5avDEcc7_MXkkxBUqP89EDGxkJYf3-VC1UikBLlzjgdLhL4xGB9GknBKFiliZCXPLyJI4qP6sVgZadpCC2zKuni5f7Q6Z2fCDLWysHNnUeBxZgDBrfIQfdHyE_Oa4i_exB5mQy4lFCr5njWQ9wLgMx4yg8878BIpER2AXtz6IDUF-knDGr2PNS_u-dPvIxcditoK9c4U9ayRZPLQFf7u3lQInERB5Q7KtkHXj_B6DHKRUw',
 ];
 
-const SUSTAIN_STATS = [
-  { value: 42, suffix: '', label: 'hộ nông liên kết tại Cầu Đất & Bảo Lộc' },
-  { value: 1650, suffix: ' m', label: 'độ cao trung bình của vườn cà phê' },
-  { value: 92, suffix: '%', label: 'quả được hái chín đỏ hoàn toàn bằng tay' },
-  { value: 14, suffix: '', label: 'ngày tối đa từ mẻ rang đến lúc lên quầy' }
-];
 
-const SUSTAIN_CHAPTERS = [
-  {
-    index: '01 / 03',
-    title: 'Người trồng',
-    heading: 'Giá trị bắt đầu từ bàn tay hái quả',
-    body: 'An Roastery mua trực tiếp từ các hộ nông liên kết, trả cao hơn giá thị trường cho phần quả chín đỏ được tuyển tay. Lịch thu mua được chốt trước vụ mùa để nông hộ yên tâm chăm vườn thay vì chạy theo sản lượng.'
-  },
-  {
-    index: '02 / 03',
-    title: 'Đất & vườn',
-    heading: 'Canh tác nhẹ tay với đất đồi',
-    body: 'Vườn liên kết giữ lại hàng cây che bóng, hạn chế thuốc trừ cỏ và ủ vỏ cà phê làm phân hữu cơ ngay tại chỗ. Đất khỏe thì cây khỏe — và hương vị trong tách là kết quả cuối cùng của chuỗi đó.'
-  },
-  {
-    index: '03 / 03',
-    title: 'Quầy bar',
-    heading: 'Ít lãng phí hơn ở mỗi ca phục vụ',
-    body: 'Bã cà phê sau pha được gom cho các vườn rau đô thị, sữa tươi được chia ca theo lượng khách dự kiến và bánh cuối ngày giảm giá thay vì bỏ đi. Mỗi quán nhỏ làm phần của mình, đều đặn mỗi ngày.'
-  }
-];
 
-const JOURNEY = [
-  {
-    phase: 'Giai đoạn I',
-    when: 'Tháng 11 – 2',
-    title: 'Thu hái chọn lọc',
-    body: 'Chỉ quả đỏ mọng được hái, theo nhiều đợt trong cùng một vụ để không quả nào bị hái xanh.'
-  },
-  {
-    phase: 'Giai đoạn II',
-    when: '30 ngày',
-    title: 'Sơ chế & phơi giàn',
-    body: 'Honey và natural phơi trên giàn nhà kính, đảo đều tay cho đến khi độ ẩm hạt ổn định.'
-  },
-  {
-    phase: 'Giai đoạn III',
-    when: 'Ngày 0',
-    title: 'Rang mẻ nhỏ',
-    body: 'Mỗi mẻ dưới 5kg trên máy Giesen W6A, đồ thị rang được lưu lại để đối chiếu từng lần.'
-  },
-  {
-    phase: 'Giai đoạn IV',
-    when: 'Ngày 2 – 14',
-    title: 'Lên quầy bar',
-    body: 'Hạt nghỉ đủ ngày sau rang rồi mới xay pha — khoảng thời gian cho hương vị tròn nhất.'
-  }
-];
 
-const COMMITMENTS = [
-  {
-    title: 'Hái chín bằng tay',
-    body: 'Chỉ tuyển quả đỏ mọng đồng đều để tối ưu đường tự nhiên trong hạt.'
-  },
-  {
-    title: 'Sơ chế Honey & Natural',
-    body: 'Phơi giàn nhà kính thông thoáng, giữ nốt hương hoa quả và mật ong.'
-  },
-  {
-    title: 'Rang mẻ nhỏ thủ công',
-    body: 'Micro-batch dưới 5kg mỗi mẻ giúp kiểm soát hương vị từng mẻ đậu.'
-  },
-  {
-    title: 'Cupping chuẩn SCA',
-    body: 'Nếm thử và đánh giá từng thang điểm trước khi phục vụ tại quầy bar.'
-  }
-];
+
+
+
+
 
 export default function HomePage() {
   const rootRef = useRef(null);
   const [added, setAdded] = useState({});
   const [booked, setBooked] = useState(false);
+  const { lang, t } = useLang();
+  const langRef = useRef(lang);
+  langRef.current = lang;
+  const MENU = t('home.menu.items').map((item, i) => ({ ...item, img: MENU_IMGS[i] }));
+  const SUSTAIN_STATS = t('home.sustain.stats');
+  const SUSTAIN_CHAPTERS = t('home.sustain.chapters');
+  const JOURNEY = t('home.sustain.journey');
+  const COMMITMENTS = t('home.story.items');
 
   useEffect(() => {
     const root = rootRef.current;
@@ -157,7 +75,12 @@ export default function HomePage() {
       seen.observe(item);
     });
 
-    const wholeFmt = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
+    const wholeFmt = {
+      format: (n) =>
+        new Intl.NumberFormat(langRef.current === 'vi' ? 'vi-VN' : 'en-US', {
+          maximumFractionDigits: 0
+        }).format(n)
+    };
     const counted = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -260,25 +183,27 @@ export default function HomePage() {
         <div className="hp-shell hp-header__inner">
           <a className="hp-brand" href="#top">
             <span className="hp-brand__name">An Roastery</span>
-            <span className="hp-brand__tag">Specialty coffee & kitchen</span>
+            <span className="hp-brand__tag">{t('brand.tag')}</span>
           </a>
 
-          <nav className="hp-nav" aria-label="Điều hướng trang chủ">
-            <a href="#thuc-don">Thực đơn</a>
-            <a href="#dat-ban">Đặt bàn</a>
-            <a href="#cau-chuyen">Câu chuyện hạt</a>
-            <a href="#ben-vung">Bền vững</a>
-            <a href="#khong-gian">Không gian</a>
-            <Link to="/login">Quản trị / POS</Link>
+          <nav className="hp-nav" aria-label={t('nav.label')}>
+            <a href="#thuc-don">{t('nav.menu')}</a>
+            <Link to="/products">{t('nav.products')}</Link>
+            <Link to="/coffee-culture">{t('nav.culture')}</Link>
+            <a href="#dat-ban">{t('nav.booking')}</a>
+            <a href="#cau-chuyen">{t('nav.story')}</a>
+            <a href="#ben-vung">{t('nav.sustain')}</a>
+            <a href="#khong-gian">{t('nav.space')}</a>
+            <Link to="/login">{t('nav.admin')}</Link>
           </nav>
 
           <div className="hp-header__actions">
             <div className="hp-hotline">
-              <span>Hotline</span>
+              <span>{t('nav.hotline')}</span>
               <a href="tel:19006886">1900 6886</a>
             </div>
             <a className="hp-btn hp-btn--primary" href="#thuc-don">
-              Gọi món
+              {t('nav.orderNow')}
             </a>
           </div>
         </div>
@@ -290,31 +215,17 @@ export default function HomePage() {
         <section className="hp-section hp-section--foam">
           <div className="hp-shell">
             <div className="hp-section__head">
-              <h2>Ba việc chúng tôi làm mỗi ngày</h2>
-              <p>Gọi món nhanh, pha chế trước mặt bạn, bánh nướng ra lò hai lần mỗi ngày.</p>
+              <h2>{t('home.pillars.head')}</h2>
+              <p>{t('home.pillars.sub')}</p>
             </div>
             <div className="hp-pillars">
-              <article className="hp-pillar">
-                <h3>QR Order tại bàn</h3>
-                <p>
-                  Quét mã, chỉnh đá–ngọt–sữa yến mạch, thanh toán VietQR hoặc thẻ trong khoảng nửa phút.
-                </p>
-                <span className="hp-pillar__meta">Giảm thời gian chờ gọi món</span>
-              </article>
-              <article className="hp-pillar">
-                <h3>Quầy bar mở</h3>
-                <p>
-                  Ngồi đối diện barista: pour-over V60, cold brew ủ 24 giờ, máy pha Synesso.
-                </p>
-                <span className="hp-pillar__meta">Xem quy trình pha chế</span>
-              </article>
-              <article className="hp-pillar">
-                <h3>Bếp bánh bơ Pháp</h3>
-                <p>
-                  Croissant và sourdough nướng lúc 07:30 và 14:00 với bơ Bret.
-                </p>
-                <span className="hp-pillar__meta">Mẻ mới mỗi buổi</span>
-              </article>
+              {t('home.pillars.items').map((pillar) => (
+                <article className="hp-pillar" key={pillar.title}>
+                  <h3>{pillar.title}</h3>
+                  <p>{pillar.body}</p>
+                  <span className="hp-pillar__meta">{pillar.meta}</span>
+                </article>
+              ))}
             </div>
           </div>
         </section>
@@ -322,9 +233,9 @@ export default function HomePage() {
         <section className="hp-section" id="thuc-don">
           <div className="hp-shell">
             <div className="hp-section__head">
-              <h2>Signature đang bán chạy</h2>
+              <h2>{t('home.menu.head')}</h2>
               <a className="hp-link" href="#dat-ban">
-                Đặt bàn để thưởng thức tại quán
+                {t('home.menu.link')}
               </a>
             </div>
             <div className="hp-menu">
@@ -350,7 +261,7 @@ export default function HomePage() {
                     <button
                       type="button"
                       className={`hp-add${added[item.name] ? ' is-added' : ''}`}
-                      aria-label={`Thêm ${item.name}`}
+                      aria-label={t('home.menu.addAria').replace('{name}', item.name)}
                       onClick={() => onAdd(item.name)}
                     >
                       {added[item.name] ? '✓' : '+'}
@@ -370,7 +281,7 @@ export default function HomePage() {
                 className="hp-drift"
                 data-drift="0.08"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqDL4pxQXm-QEu5d9xNQIWgie0vwKBfpwBwGaJ3EspbfEKN4BJabbaY9bviyN7PdoAE8ifCSXLwnYiSp8Yx9KIK0rP9-NzzuYe4SSZSgK1MUarnBp6B7SUQpv-HXIz8VpE0MuaBE5Y8cj6aPlz6cAPLG9mhk5ryS46D1cyAiIZ6iVkUzdQBg7Mf_3x0pqq_PJoaWBJCcSi4nb9La3U-0Yo1XNEyXfDzg59_EjisCOD_F_UWZFqD74U1w"
-                alt="Vườn cà phê Cầu Đất trong sương sớm"
+                alt={t('home.story.imgFarmAlt')}
                 width={640}
                 height={800}
                 loading="lazy"
@@ -378,18 +289,18 @@ export default function HomePage() {
               </div>
               <div className="hp-story__note">
                 <strong>1.650m</strong>
-                <span>Cầu Đất & Bảo Lộc, Lâm Đồng</span>
+                <span>{t('home.story.noteAlt')}</span>
               </div>
               <div className="hp-story__note hp-story__note--dark">
                 <strong>Giesen W6A</strong>
-                <span>Đồ thị rang kiểm soát từng mẻ</span>
+                <span>{t('home.story.noteRoast')}</span>
               </div>
               <div className="hp-frame">
               <img
                 className="hp-drift"
                 data-drift="0.12"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqHKTNaqWBmkTZingmeTQfG_APVvRk0ey9eNI6u725znsnG7Yp7BMVJgqWRsubge5phrxlKou7BpoeHp-BzCklXzyyTX0ug2CKTDmaIiRuWIEJ-6KIj26PPm1bBj0ObU1MtJ2t_fOIgY9w-76wIGpTsJJJNdMITSXo1GGhV9cTH9j0p1DL2MznkNpDwJHhpeLrw_njpojUvY_9h-ur6XVThFhK3SJJlLp6an2GS_Vlfcz47eQxShsjzw"
-                alt="Hạt cà phê mới rang đang nguội trên khay"
+                alt={t('home.story.imgRoastAlt')}
                 width={640}
                 height={800}
                 loading="lazy"
@@ -399,11 +310,9 @@ export default function HomePage() {
 
             <div>
               <div className="hp-section__head hp-section__head--tight">
-                <h2>Bốn cam kết từ nông trại đến tách</h2>
+                <h2>{t('home.story.head')}</h2>
               </div>
-              <p className="hp-lede">
-                Tách ngon không cần hương liệu. Giá trị nằm ở hạt chín cây, sơ chế tỉ mỉ và tay nghề người rang.
-              </p>
+              <p className="hp-lede">{t('home.story.lede')}</p>
               <ol className="hp-commitments">
                 {COMMITMENTS.map((item, index) => (
                   <li key={item.title}>
@@ -423,15 +332,12 @@ export default function HomePage() {
           <div className="hp-shell">
             <div className="hp-section__head hp-reveal">
               <h2>
-                Từ đồi Cầu Đất <em>đến</em> tách cà phê trên tay bạn
+                {t('home.sustain.titleA')} <em>{t('home.sustain.titleEm')}</em> {t('home.sustain.titleB')}
               </h2>
-              <p>
-                Bền vững ở An Roastery không phải khẩu hiệu treo tường. Đó là cách quán mua hạt,
-                cách vườn được chăm và cách mỗi ca phục vụ dùng vừa đủ nguyên liệu.
-              </p>
+              <p>{t('home.sustain.sub')}</p>
             </div>
 
-            <div className="hp-stats hp-reveal" role="list" aria-label="Con số bền vững">
+            <div className="hp-stats hp-reveal" role="list" aria-label={t('home.sustain.statsAria')}>
               {SUSTAIN_STATS.map((stat) => (
                 <div className="hp-stat" role="listitem" key={stat.label}>
                   <p className="hp-stat__value">
@@ -465,22 +371,22 @@ export default function HomePage() {
                 className="hp-drift"
                 data-drift="0.05"
                 src="/scroll/2-san-phoi.jpg"
-                alt="Sân phơi cà phê trên đồi Cầu Đất"
+                alt={t('home.sustain.band.alt')}
                 width={1600}
                 height={900}
                 loading="lazy"
               />
             </picture>
             <figcaption className="hp-shell">
-              <strong>Sân phơi giàn nhà kính</strong>
-              <span>Nơi hạt cà phê trải qua 30 ngày chậm rãi trước khi về xưởng rang.</span>
+              <strong>{t('home.sustain.band.title')}</strong>
+              <span>{t('home.sustain.band.caption')}</span>
             </figcaption>
           </figure>
 
           <div className="hp-shell">
             <div className="hp-section__head hp-section__head--tight hp-reveal">
-              <h2>Hành trình của một hạt</h2>
-              <p>Bốn giai đoạn, một vụ mùa — theo đúng nhịp mà quán vẫn làm từ ngày đầu.</p>
+              <h2>{t('home.sustain.journeyHead')}</h2>
+              <p>{t('home.sustain.journeySub')}</p>
             </div>
             <ol className="hp-journey hp-reveal">
               {JOURNEY.map((step) => (
@@ -498,20 +404,18 @@ export default function HomePage() {
         <section className="hp-section hp-section--ink" id="dat-ban">
           <div className="hp-shell hp-book">
             <div className="hp-book__copy">
-              <h2>Đặt bàn và workshop cà phê</h2>
-              <p>
-                Giữ chỗ làm việc yên tĩnh, góc ban công, hoặc đăng ký cupping cùng master roaster sáng thứ Bảy.
-              </p>
+              <h2>{t('home.book.head')}</h2>
+              <p>{t('home.book.sub')}</p>
               <ul className="hp-book__list">
-                <li>Giữ chỗ trước đến 30 phút, không phụ phí</li>
-                <li>Ổ cắm, bàn làm việc và wifi ổn định</li>
-                <li>Một cookie bơ Pháp khi đặt trước online</li>
+                {t('home.book.perks').map((perk) => (
+                  <li key={perk}>{perk}</li>
+                ))}
               </ul>
             </div>
 
             <form className="hp-form" onSubmit={onBook}>
               <div className="hp-field">
-                <label htmlFor="hp-branch">Chi nhánh</label>
+                <label htmlFor="hp-branch">{t('home.book.branch')}</label>
                 <select id="hp-branch" name="branch" defaultValue="tan-binh" required>
                   <option value="tan-binh">12 Hoàng Hoa Thám, Tân Bình, TP.HCM</option>
                   <option value="quan-3">06 Trần Cao Vân, Quận 3, TP.HCM</option>
@@ -520,11 +424,11 @@ export default function HomePage() {
               </div>
               <div className="hp-form__row">
                 <div className="hp-field">
-                  <label htmlFor="hp-date">Ngày</label>
+                  <label htmlFor="hp-date">{t('home.book.date')}</label>
                   <input id="hp-date" name="date" type="date" required />
                 </div>
                 <div className="hp-field">
-                  <label htmlFor="hp-time">Khung giờ</label>
+                  <label htmlFor="hp-time">{t('home.book.time')}</label>
                   <select id="hp-time" name="time" defaultValue="10:00" required>
                     <option value="08:00">08:00 – 10:00</option>
                     <option value="10:00">10:00 – 12:00</option>
@@ -535,40 +439,42 @@ export default function HomePage() {
               </div>
               <div className="hp-form__row">
                 <div className="hp-field">
-                  <label htmlFor="hp-guests">Số khách</label>
+                  <label htmlFor="hp-guests">{t('home.book.guests')}</label>
                   <select id="hp-guests" name="guests" defaultValue="2" required>
-                    <option value="1">1 người</option>
-                    <option value="2">2 người</option>
-                    <option value="3-5">3 – 5 người</option>
-                    <option value="6-12">6 – 12 người</option>
+                    {['1', '2', '3-5', '6-12'].map((value, i) => (
+                      <option key={value} value={value}>
+                        {t('home.book.guestsOptions')[i]}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="hp-field">
-                  <label htmlFor="hp-area">Khu vực</label>
+                  <label htmlFor="hp-area">{t('home.book.area')}</label>
                   <select id="hp-area" name="area" defaultValue="quiet" required>
-                    <option value="quiet">Sảnh yên tĩnh</option>
-                    <option value="garden">Ban công ngoài trời</option>
-                    <option value="bar">Gần quầy bar</option>
-                    <option value="work">Bàn làm việc có ổ cắm</option>
+                    {['quiet', 'garden', 'bar', 'work'].map((value, i) => (
+                      <option key={value} value={value}>
+                        {t('home.book.areaOptions')[i]}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
               <div className="hp-form__row">
                 <div className="hp-field">
-                  <label htmlFor="hp-name">Họ tên</label>
-                  <input id="hp-name" name="name" type="text" placeholder="Nguyễn Văn An" required />
+                  <label htmlFor="hp-name">{t('home.book.name')}</label>
+                  <input id="hp-name" name="name" type="text" placeholder={t('home.book.namePlaceholder')} required />
                 </div>
                 <div className="hp-field">
-                  <label htmlFor="hp-phone">Số điện thoại</label>
-                  <input id="hp-phone" name="phone" type="tel" placeholder="0901 234 567" required />
+                  <label htmlFor="hp-phone">{t('home.book.phone')}</label>
+                  <input id="hp-phone" name="phone" type="tel" placeholder={t('home.book.phonePlaceholder')} required />
                 </div>
               </div>
               <button className="hp-btn hp-btn--brass hp-btn--block" type="submit">
-                Giữ bàn miễn phí
+                {t('home.book.submit')}
               </button>
               {booked && (
                 <p className="hp-form__msg" role="status">
-                  Đã ghi nhận. Quán sẽ gọi xác nhận trong vài phút.
+                  {t('home.book.success')}
                 </p>
               )}
             </form>
@@ -578,8 +484,8 @@ export default function HomePage() {
         <section className="hp-section" id="khong-gian">
           <div className="hp-shell">
             <div className="hp-section__head">
-              <h2>Không gian giữa phố</h2>
-              <p>Gỗ sồi, bê tông mài và mùi mẻ rang mới — chỗ ngồi làm việc hoặc đọc sách.</p>
+              <h2>{t('home.space.head')}</h2>
+              <p>{t('home.space.sub')}</p>
             </div>
             <div className="hp-gallery">
               <figure>
@@ -587,43 +493,41 @@ export default function HomePage() {
                   className="hp-drift"
                   data-drift="0.06"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxY7SnJeyv3sKueKwezTVUjXEPnTMpEgmVoawFkH_Hw8uTr0wWbNIM4GSdPKwSulYnj8kokWnvFcd7VEDmFjA1bw7u4tW6ksAvEhywyySYewNDO95Yky8Xk7JXK7as7hczCk4YxEHLwq9BPxof8ZRJLjKJY3XP4nLVNcZsXeKsPrXqLvPYKf2N0D4G6psuTs5HzE067QYyX-VjcTzeHQEn5fnKjL__fAlpXzStDIixYaqdykSbrh6OVg"
-                  alt="Bàn làm việc dài dưới ánh sáng cửa sổ lớn"
+                  alt={t('home.space.gallery')[0].alt}
                   width={1200}
                   height={800}
                   loading="lazy"
                 />
-                <figcaption>Bàn dài & ánh sáng tự nhiên</figcaption>
+                <figcaption>{t('home.space.gallery')[0].caption}</figcaption>
               </figure>
               <figure>
                 <img
                   className="hp-drift"
                   data-drift="0.1"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOerLfMoGxddEuaHcl9Hlzkt26CBr5k7VA_bhoh7k1oj4Cp5dradxhl-uYvAPglCNIRFRUvdECspbYIeiifIBq2xwy5KK4sXRFvnsQR5mC0udWvSyX1lWj3O_td5zsWrZdi7MoJJ0evIcaHY939W6xLeHWROnycy_vachLzCggjwLcjyY_1qbBX_3lYdYTrKrvBRF-wDt_9YfgZXKmRfNU01Uv3YGC4hEK_gD8zvn4phlpE6t8jGphzw"
-                  alt="Góc đọc sách với ghế da và kệ sách"
+                  alt={t('home.space.gallery')[1].alt}
                   width={800}
                   height={800}
                   loading="lazy"
                 />
-                <figcaption>Góc đọc sách</figcaption>
+                <figcaption>{t('home.space.gallery')[1].caption}</figcaption>
               </figure>
               <figure>
                 <img
                   className="hp-drift"
                   data-drift="0.07"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQDnutRmyYrbM4EJyPbf-E19RkmoqWW3XUkz5_YIk2XQtNaycZad4XZ5T6E93NILM83vDFS9HVoamUVH6O6ZHSOeCrSspCih3TD2GGowpTuamLjmOqam7NU2qPpn-hEaFBvgdrQOD8wwNPYqKMy2DbErJAdJZPkxmZ7YzTKZiHF7vWzdTGeK5TRCOy82mQbt15qeCRa0DfboamoGMC6v20g90eoaRVDSV2rWFJLtAIbHML7IJ01827qQ"
-                  alt="Ban công ngoài trời dưới tán cây"
+                  alt={t('home.space.gallery')[2].alt}
                   width={1000}
                   height={700}
                   loading="lazy"
                 />
-                <figcaption>Ban công ngoài trời</figcaption>
+                <figcaption>{t('home.space.gallery')[2].caption}</figcaption>
               </figure>
             </div>
             <blockquote className="hp-quote">
-              <p>
-                “Cà phê muối rang mộc thật, không gắt dầu. QR Order tại bàn chạy mượt — đặt xong là pha.”
-              </p>
-              <footer>Hoàng Minh Quân · khách thường xuyên chi nhánh Tân Bình</footer>
+              <p>{t('home.space.quote')}</p>
+              <footer>{t('home.space.quoteBy')}</footer>
             </blockquote>
           </div>
         </section>
@@ -631,12 +535,13 @@ export default function HomePage() {
         <section className="hp-section hp-section--foam hp-section--flush-top">
           <div className="hp-shell">
             <div className="hp-staff">
-              <p className="hp-staff__label">Dành cho nhân viên và quản trị An Roastery</p>
+              <p className="hp-staff__label">{t('home.staff.label')}</p>
               <div className="hp-staff__links">
-                <Link to="/login">POS thu ngân</Link>
-                <Link to="/login">KDS bếp</Link>
-                <Link to="/login">Dashboard</Link>
-                <Link to="/login">Waiter app</Link>
+                {t('home.staff.links').map((label) => (
+                  <Link key={label} to="/login">
+                    {label}
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
@@ -648,29 +553,21 @@ export default function HomePage() {
           <div className="hp-footer__grid">
             <div>
               <p className="hp-brand__name">An Roastery</p>
-              <p>
-                Rang mộc chuẩn SCA, pha chế thủ công và không gian thưởng thức giữa đô thị.
-              </p>
+              <p>{t('footer.tagline')}</p>
             </div>
             <div>
-              <h3>Giờ mở cửa</h3>
+              <h3>{t('footer.hoursTitle')}</h3>
               <ul className="hp-footer__hours">
-                <li>
-                  <span>Thứ 2 – Thứ 6</span>
-                  <strong>06:30 – 22:30</strong>
-                </li>
-                <li>
-                  <span>Thứ 7 – Chủ nhật</span>
-                  <strong>07:00 – 23:00</strong>
-                </li>
-                <li>
-                  <span>Kitchen / brunch</span>
-                  <strong>07:30 – 14:00</strong>
-                </li>
+                {t('footer.hours').map((row) => (
+                  <li key={row.label}>
+                    <span>{row.label}</span>
+                    <strong>{row.value}</strong>
+                  </li>
+                ))}
               </ul>
             </div>
             <div>
-              <h3>Chi nhánh</h3>
+              <h3>{t('footer.branchesTitle')}</h3>
               <ul>
                 <li>12 Hoàng Hoa Thám, Tân Bình, TP.HCM</li>
                 <li>06 Trần Cao Vân, Quận 3, TP.HCM</li>
@@ -678,18 +575,18 @@ export default function HomePage() {
               </ul>
             </div>
             <div>
-              <h3>Liên hệ</h3>
+              <h3>{t('footer.contactTitle')}</h3>
               <ul>
-                <li>Đặt bàn: 1900 6886</li>
-                <li>Email: hello@anroastery.vn</li>
+                <li>{t('footer.bookingLine')}</li>
+                <li>{t('footer.emailLine')}</li>
               </ul>
             </div>
           </div>
           <div className="hp-footer__bottom">
             <p>© {new Date().getFullYear()} An Roastery</p>
             <div className="hp-footer__legal">
-              <a href="#top">Chính sách bảo mật</a>
-              <a href="#top">Điều khoản</a>
+              <a href="#top">{t('footer.privacy')}</a>
+              <a href="#top">{t('footer.terms')}</a>
             </div>
           </div>
         </div>

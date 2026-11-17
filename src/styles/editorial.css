@@ -1,0 +1,461 @@
+/* Trang Sản phẩm & Văn hóa cà phê — dùng chung token .hp của homepage.css,
+   tiền tố .ed- để không đụng vào trang chủ và khu vực admin. */
+
+.ed-hero {
+  padding: clamp(3rem, 8vw, 5.5rem) 0 clamp(2rem, 5vw, 3.5rem);
+}
+
+.ed-kicker {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hp-brass);
+  margin: 0 0 0.9rem;
+}
+
+.ed-title {
+  font-family: var(--hp-display);
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  line-height: 1.04;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  margin: 0 0 1.1rem;
+  max-width: 16ch;
+}
+
+.ed-lede {
+  font-size: clamp(1.02rem, 1.6vw, 1.2rem);
+  line-height: 1.65;
+  color: var(--hp-mute);
+  max-width: 62ch;
+  margin: 0;
+}
+
+.ed-hero-media {
+  margin: clamp(1.8rem, 4vw, 3rem) 0 0;
+  border-radius: 0.35rem;
+  overflow: hidden;
+}
+
+.ed-hero-media img {
+  width: 100%;
+  height: clamp(280px, 52vh, 520px);
+  object-fit: cover;
+}
+
+/* --- Products --- */
+.ed-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding: 1.4rem 0 0.4rem;
+}
+
+.ed-chip {
+  padding: 0.55rem 1.05rem;
+  border: 1px solid var(--hp-line);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--hp-mute);
+  font-family: var(--hp-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.ed-chip:hover {
+  border-color: var(--hp-brass);
+  color: var(--hp-ink);
+}
+
+.ed-chip.is-active {
+  background: var(--hp-ink);
+  border-color: var(--hp-ink);
+  color: var(--hp-linen);
+}
+
+.ed-cat-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin: 2.6rem 0 0.4rem;
+}
+
+.ed-cat-head h2 {
+  font-family: var(--hp-display);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 560;
+  margin: 0;
+}
+
+.ed-cat-head p {
+  color: var(--hp-mute);
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.ed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.1rem;
+  padding: 1.1rem 0 0.5rem;
+}
+
+.ed-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--hp-foam);
+  border: 1px solid var(--hp-line);
+  border-radius: 0.35rem;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.ed-card:hover {
+  border-color: color-mix(in srgb, var(--hp-brass) 55%, transparent);
+  transform: translateY(-3px);
+}
+
+.ed-card__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.ed-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.ed-card:hover .ed-card__media img {
+  transform: scale(1.045);
+}
+
+.ed-card__badge {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 9999px;
+  background: var(--hp-roast);
+  color: #f8f0e4;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ed-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 1rem 1.05rem 1.15rem;
+  flex: 1;
+}
+
+.ed-card__unit {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--hp-brass);
+  margin: 0;
+}
+
+.ed-card__name {
+  font-family: var(--hp-display);
+  font-size: 1.22rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.ed-card__desc {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--hp-mute);
+  margin: 0;
+}
+
+.ed-card__notes {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--hp-roast);
+  margin: 0.15rem 0 0;
+}
+
+.ed-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 0.85rem;
+}
+
+.ed-card__price {
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.ed-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--hp-ink);
+  border-radius: 0.2rem;
+  background: var(--hp-ink);
+  color: var(--hp-linen);
+  font-family: var(--hp-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.ed-add:hover {
+  background: var(--hp-roast);
+  border-color: var(--hp-roast);
+}
+
+.ed-add.is-added {
+  background: var(--hp-brass);
+  border-color: var(--hp-brass);
+  color: #fff;
+}
+
+.ed-note {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  margin: 2.2rem 0 3rem;
+  padding: 1rem 1.15rem;
+  border: 1px dashed color-mix(in srgb, var(--hp-brass) 55%, transparent);
+  border-radius: 0.35rem;
+  color: var(--hp-mute);
+  font-size: 0.93rem;
+  line-height: 1.55;
+}
+
+.ed-note .material-symbols-outlined {
+  color: var(--hp-brass);
+  font-size: 20px;
+  flex: none;
+  margin-top: 0.1rem;
+}
+
+/* --- Coffee Culture --- */
+.ed-chapter {
+  padding: clamp(2.4rem, 5vw, 4rem) 0;
+  border-top: 1px solid var(--hp-line);
+}
+
+.ed-chapter__index {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hp-brass);
+  margin: 0 0 0.7rem;
+}
+
+.ed-chapter h2 {
+  font-family: var(--hp-display);
+  font-size: clamp(1.7rem, 3.6vw, 2.5rem);
+  font-weight: 560;
+  line-height: 1.15;
+  margin: 0 0 1.2rem;
+  max-width: 24ch;
+}
+
+.ed-chapter__body p {
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: color-mix(in srgb, var(--hp-ink) 82%, transparent);
+  margin: 0 0 1.05rem;
+  max-width: 68ch;
+}
+
+.ed-split {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: start;
+}
+
+.ed-figure {
+  margin: 0;
+}
+
+.ed-figure img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 0.35rem;
+}
+
+.ed-figure figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.87rem;
+  color: var(--hp-mute);
+}
+
+.ed-figure figcaption strong {
+  color: var(--hp-ink);
+  display: block;
+  font-size: 0.92rem;
+}
+
+.ed-timeline {
+  list-style: none;
+  margin: 1.6rem 0 0;
+  padding: 0;
+  border-left: 2px solid color-mix(in srgb, var(--hp-brass) 45%, transparent);
+}
+
+.ed-timeline li {
+  position: relative;
+  padding: 0 0 1.7rem 1.6rem;
+}
+
+.ed-timeline li::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 0.42rem;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--hp-brass);
+  border: 2px solid var(--hp-linen);
+}
+
+.ed-timeline__year {
+  font-family: var(--hp-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--hp-roast);
+  margin: 0;
+}
+
+.ed-timeline h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0.2rem 0 0.3rem;
+}
+
+.ed-timeline p {
+  color: var(--hp-mute);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 62ch;
+}
+
+.ed-duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.2rem, 3vw, 2.2rem);
+}
+
+.ed-duo h3 {
+  font-family: var(--hp-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 0 0 0.6rem;
+}
+
+.ed-duo p {
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--hp-ink) 82%, transparent);
+  margin: 0;
+}
+
+.ed-guides {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.1rem;
+  margin-top: 1.5rem;
+}
+
+.ed-guide {
+  background: var(--hp-foam);
+  border: 1px solid var(--hp-line);
+  border-radius: 0.35rem;
+  padding: 1.3rem 1.25rem 1.4rem;
+}
+
+.ed-guide h3 {
+  font-family: var(--hp-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 0.9rem;
+}
+
+.ed-guide dl {
+  margin: 0 0 0.9rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.ed-guide dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.88rem;
+  border-bottom: 1px dashed var(--hp-line);
+  padding-bottom: 0.35rem;
+}
+
+.ed-guide dt {
+  color: var(--hp-mute);
+  font-weight: 600;
+}
+
+.ed-guide dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}
+
+.ed-guide p {
+  font-size: 0.93rem;
+  line-height: 1.6;
+  color: var(--hp-mute);
+  margin: 0;
+}
+
+.ed-closing {
+  text-align: center;
+  padding: clamp(2.6rem, 6vw, 4.5rem) 0 clamp(3rem, 7vw, 5rem);
+}
+
+.ed-closing blockquote {
+  font-family: var(--hp-display);
+  font-size: clamp(1.5rem, 3.4vw, 2.3rem);
+  font-style: italic;
+  line-height: 1.3;
+  margin: 0 auto 1rem;
+  max-width: 26ch;
+}
+
+.ed-closing p {
+  color: var(--hp-mute);
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .ed-split,
+  .ed-duo {
+    grid-template-columns: 1fr;
+  }
+
+  .ed-guides {
+    grid-template-columns: 1fr;
+  }
+}
