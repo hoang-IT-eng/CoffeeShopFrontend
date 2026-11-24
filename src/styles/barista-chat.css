@@ -1,0 +1,720 @@
+/* ==========================================================================
+   An Roastery — AI Barista / Coffee Concierge Widget
+   Scoped tokens aligned with DESIGN.md & editorial storefront surfaces:
+   Espresso #2b1d14 · Ink #1a1410 · Cream #f8f6f1 · Linen #e9e4d9 · Caramel #b5835a
+   ========================================================================== */
+
+.bc-root {
+  --bc-espresso: #2b1d14;
+  --bc-ink: #1a1410;
+  --bc-mute: #5a534c;
+  --bc-cream: #f8f6f1;
+  --bc-parchment: #f5ecdf;
+  --bc-linen: #e9e4d9;
+  --bc-roast: #5c2e1f;
+  --bc-caramel: #b5835a;
+  --bc-brass: #9a6b3a;
+  --bc-line: rgba(26, 20, 16, 0.13);
+  --bc-line-strong: rgba(26, 20, 16, 0.22);
+  --bc-display: "Fraunces", "Cormorant Garamond", "Times New Roman", serif;
+  --bc-body: "Be Vietnam Pro", "Segoe UI", sans-serif;
+  --bc-radius: 10px;
+  --bc-shadow: 0 14px 36px rgba(26, 20, 16, 0.16);
+
+  position: fixed;
+  right: 1.35rem;
+  bottom: 1.35rem;
+  z-index: 60;
+  font-family: var(--bc-body);
+  color: var(--bc-ink);
+  line-height: 1.5;
+}
+
+.bc-root *,
+.bc-root *::before,
+.bc-root *::after {
+  box-sizing: border-box;
+}
+
+/* Floating trigger button */
+.bc-fab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.72rem 1.12rem;
+  border: 1px solid rgba(248, 246, 241, 0.18);
+  border-radius: 999px;
+  background: var(--bc-espresso);
+  color: var(--bc-cream);
+  font-family: var(--bc-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: var(--bc-shadow);
+  transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+.bc-fab:hover {
+  transform: translateY(-2px);
+  background: var(--bc-roast);
+  border-color: rgba(181, 131, 90, 0.55);
+}
+
+.bc-fab:focus-visible {
+  outline: 2px solid var(--bc-caramel);
+  outline-offset: 3px;
+}
+
+.bc-fab__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bc-caramel);
+}
+
+.bc-fab.is-open .bc-fab__icon {
+  color: var(--bc-cream);
+}
+
+/* Backdrop (shown on mobile bottom-sheet) */
+.bc-backdrop {
+  display: none;
+}
+
+/* Editorial Drawer Panel */
+.bc-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.75rem);
+  width: min(410px, calc(100vw - 2.5rem));
+  height: min(620px, calc(100vh - 6.5rem));
+  display: flex;
+  flex-direction: column;
+  background: var(--bc-cream);
+  border: 1px solid var(--bc-line-strong);
+  border-radius: var(--bc-radius);
+  box-shadow: var(--bc-shadow);
+  overflow: hidden;
+  animation: bc-slide-up 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes bc-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.bc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--bc-espresso);
+  color: var(--bc-cream);
+  border-bottom: 1px solid rgba(248, 246, 241, 0.12);
+}
+
+.bc-header__id {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.bc-header__emblem {
+  width: 2.15rem;
+  height: 2.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(181, 131, 90, 0.18);
+  border: 1px solid rgba(181, 131, 90, 0.42);
+  color: var(--bc-caramel);
+  flex-shrink: 0;
+}
+
+.bc-header__title {
+  margin: 0;
+  font-family: var(--bc-display);
+  font-size: 1.08rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--bc-cream);
+}
+
+.bc-header__status {
+  margin: 0.15rem 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  font-size: 0.74rem;
+  color: rgba(248, 246, 241, 0.78);
+}
+
+.bc-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bc-caramel);
+}
+
+.bc-header__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.bc-icon-btn {
+  width: 1.95rem;
+  height: 1.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(248, 246, 241, 0.8);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.bc-icon-btn:hover {
+  background: rgba(248, 246, 241, 0.12);
+  color: var(--bc-cream);
+}
+
+.bc-icon-btn:focus-visible {
+  outline: 2px solid var(--bc-caramel);
+  outline-offset: 1px;
+}
+
+/* Message stream */
+.bc-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background:
+    linear-gradient(180deg, var(--bc-parchment) 0%, var(--bc-cream) 110px);
+}
+
+.bc-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-width: 94%;
+}
+
+.bc-msg--user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.bc-msg--assistant {
+  align-self: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+}
+
+.bc-bubble {
+  padding: 0.7rem 0.88rem;
+  border-radius: var(--bc-radius);
+  font-size: 0.875rem;
+}
+
+.bc-msg--user .bc-bubble {
+  background: var(--bc-espresso);
+  color: var(--bc-cream);
+  border-bottom-right-radius: 3px;
+}
+
+.bc-msg--assistant .bc-bubble {
+  background: #ffffff;
+  color: var(--bc-ink);
+  border: 1px solid var(--bc-line);
+  border-bottom-left-radius: 3px;
+}
+
+.bc-bubble__text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Typing indicator */
+.bc-bubble--typing {
+  padding: 0.72rem 0.95rem;
+}
+
+.bc-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bc-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bc-brass);
+  display: block;
+  animation: bc-bounce 1.1s infinite ease-in-out;
+}
+
+.bc-dots i:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.bc-dots i:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+@keyframes bc-bounce {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+/* Suggested prompt chips */
+.bc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.15rem;
+}
+
+.bc-chip {
+  padding: 0.45rem 0.72rem;
+  border: 1px solid var(--bc-line-strong);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--bc-espresso);
+  font-family: var(--bc-body);
+  font-size: 0.79rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.bc-chip:hover {
+  border-color: var(--bc-caramel);
+  background: var(--bc-parchment);
+}
+
+/* Generative UI blocks container */
+.bc-blocks {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* Product Cards */
+.bc-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.bc-product-card {
+  background: #ffffff;
+  border: 1px solid var(--bc-line);
+  border-radius: var(--bc-radius);
+  padding: 0.72rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.bc-product-card__top {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+}
+
+.bc-product-card__img {
+  width: 56px;
+  height: 56px;
+  border-radius: 7px;
+  object-fit: cover;
+  border: 1px solid var(--bc-line);
+  flex-shrink: 0;
+  background: var(--bc-linen);
+}
+
+.bc-product-card__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.bc-product-card__title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.45rem;
+}
+
+.bc-product-card__name {
+  margin: 0;
+  font-family: var(--bc-display);
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--bc-ink);
+  line-height: 1.25;
+}
+
+.bc-product-card__price {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--bc-roast);
+  white-space: nowrap;
+}
+
+.bc-product-card__origin {
+  margin: 0.14rem 0 0;
+  font-size: 0.74rem;
+  color: var(--bc-mute);
+}
+
+.bc-product-card__notes {
+  margin: 0.25rem 0 0;
+  font-size: 0.78rem;
+  color: var(--bc-ink);
+}
+
+.bc-product-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--bc-line);
+}
+
+.bc-ticks {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.bc-ticks__label {
+  font-size: 0.72rem;
+  color: var(--bc-mute);
+}
+
+.bc-ticks__bars {
+  display: inline-flex;
+  gap: 2.5px;
+}
+
+.bc-ticks__bars i {
+  width: 10px;
+  height: 3px;
+  border-radius: 1px;
+  background: var(--bc-linen);
+  display: block;
+}
+
+.bc-ticks__bars i.is-on {
+  background: var(--bc-brass);
+}
+
+.bc-inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--bc-line-strong);
+  border-radius: 6px;
+  background: var(--bc-cream);
+  color: var(--bc-espresso);
+  font-family: var(--bc-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: auto;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.bc-inline-link:hover {
+  border-color: var(--bc-caramel);
+  background: var(--bc-parchment);
+}
+
+/* Brew Recipe Card */
+.bc-recipe-card {
+  background: var(--bc-parchment);
+  border: 1px solid rgba(154, 107, 58, 0.35);
+  border-radius: var(--bc-radius);
+  padding: 0.85rem;
+}
+
+.bc-recipe-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.bc-recipe-card__kicker {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--bc-brass);
+}
+
+.bc-recipe-card__title {
+  margin: 0.12rem 0 0;
+  font-family: var(--bc-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--bc-espresso);
+}
+
+.bc-recipe-card__badge {
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  background: var(--bc-espresso);
+  color: var(--bc-cream);
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bc-recipe-grid {
+  margin: 0 0 0.65rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.bc-recipe-grid > div {
+  background: var(--bc-cream);
+  border: 1px solid var(--bc-line);
+  border-radius: 7px;
+  padding: 0.42rem 0.55rem;
+}
+
+.bc-recipe-grid dt {
+  font-size: 0.7rem;
+  color: var(--bc-mute);
+}
+
+.bc-recipe-grid dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--bc-ink);
+}
+
+.bc-recipe-card__grind {
+  margin: 0 0 0.55rem;
+  font-size: 0.78rem;
+  color: var(--bc-mute);
+}
+
+.bc-recipe-card__grind strong {
+  color: var(--bc-ink);
+}
+
+.bc-recipe-steps {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+  font-size: 0.8rem;
+  color: var(--bc-ink);
+}
+
+/* B2B Wholesale Card */
+.bc-b2b-card {
+  background: var(--bc-espresso);
+  color: var(--bc-cream);
+  border: 1px solid rgba(181, 131, 90, 0.35);
+  border-radius: var(--bc-radius);
+  padding: 0.9rem;
+}
+
+.bc-b2b-card__badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--bc-caramel);
+}
+
+.bc-b2b-card__title {
+  margin: 0.2rem 0 0.65rem;
+  font-family: var(--bc-display);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--bc-cream);
+}
+
+.bc-b2b-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.38rem;
+}
+
+.bc-b2b-list__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(248, 246, 241, 0.12);
+  font-size: 0.77rem;
+}
+
+.bc-b2b-list__row dt {
+  color: rgba(248, 246, 241, 0.72);
+  flex-shrink: 0;
+}
+
+.bc-b2b-list__row dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 500;
+  color: var(--bc-cream);
+}
+
+.bc-b2b-card__foot {
+  margin-top: 0.72rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.bc-b2b-card__contact {
+  font-size: 0.73rem;
+  color: rgba(248, 246, 241, 0.78);
+}
+
+.bc-b2b-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.75rem;
+  border: none;
+  border-radius: 7px;
+  background: var(--bc-caramel);
+  color: #1a1410;
+  font-family: var(--bc-body);
+  font-size: 0.77rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 150ms ease;
+}
+
+.bc-b2b-card__cta:hover {
+  filter: brightness(1.06);
+}
+
+/* Composer */
+.bc-composer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.72rem 0.85rem;
+  background: #ffffff;
+  border-top: 1px solid var(--bc-line);
+}
+
+.bc-composer__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.58rem 0.75rem;
+  border: 1px solid var(--bc-line-strong);
+  border-radius: 8px;
+  background: var(--bc-cream);
+  color: var(--bc-ink);
+  font-family: var(--bc-body);
+  font-size: 0.86rem;
+}
+
+.bc-composer__input:focus {
+  outline: none;
+  border-color: var(--bc-brass);
+  background: #ffffff;
+}
+
+.bc-composer__send {
+  width: 2.35rem;
+  height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: var(--bc-espresso);
+  color: var(--bc-cream);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 150ms ease, opacity 150ms ease;
+}
+
+.bc-composer__send:hover:not(:disabled) {
+  background: var(--bc-roast);
+}
+
+.bc-composer__send:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+/* Mobile full-width bottom sheet */
+@media (max-width: 640px) {
+  .bc-root {
+    right: 0.9rem;
+    bottom: 0.9rem;
+  }
+
+  .bc-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 20, 16, 0.42);
+    z-index: 59;
+  }
+
+  .bc-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 84dvh;
+    border-radius: 14px 14px 0 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    z-index: 61;
+  }
+
+  .bc-fab.is-open {
+    display: none;
+  }
+}

@@ -27,6 +27,22 @@ import PaymentsPage from './pages/PaymentsPage';
 import PayPage from './pages/PayPage';
 import ReceiptPage from './pages/ReceiptPage';
 import ReportsPage from './pages/ReportsPage';
+import BaristaChatWidget from './components/barista/BaristaChatWidget';
+
+const PUBLIC_STOREFRONT_PATHS = new Set([
+  '/',
+  '/products',
+  '/coffee-culture',
+  '/business-solutions',
+  '/sustainability',
+  '/journal'
+]);
+
+function PublicBaristaMount() {
+  const { pathname } = useLocation();
+  if (!PUBLIC_STOREFRONT_PATHS.has(pathname)) return null;
+  return <BaristaChatWidget />;
+}
 
 function RequireAuth({ children }) {
   const { user, ready } = useAuth();
@@ -120,6 +136,7 @@ export default function App() {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <PublicBaristaMount />
     </>
   );
 }
