@@ -41,6 +41,8 @@ const vi = {
   },
   switcher: { label: 'Chọn ngôn ngữ' },
   story: {
+    eyebrow: 'Mùa vụ Cầu Đất · Rang mộc mẻ nhỏ',
+    reelTag: 'Chặng',
     cue: 'Cuộn xuống để theo hạt đi từ đồi tới tách',
     viewMenu: 'Xem thực đơn',
     book: 'Đặt bàn',
@@ -507,6 +509,8 @@ const en = {
   },
   switcher: { label: 'Choose language' },
   story: {
+    eyebrow: 'Cau Dat Harvest · Small-Batch Roastery',
+    reelTag: 'Reel',
     cue: 'Scroll to follow the bean from hill to cup',
     viewMenu: 'View the menu',
     book: 'Book a table',

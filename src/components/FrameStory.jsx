@@ -150,7 +150,7 @@ const WINDOWS = CHAPTERS.map((chapter, index) => {
 
 function Lines({ lines, offset = 0 }) {
   return lines.map((line, index) => (
-    <span className="fs-line" key={line}>
+    <span className="fs-line" key={`${offset}-${index}-${line}`}>
       <span className="fs-line__in" style={{ '--i': index + offset }}>
         {line}
       </span>
@@ -163,6 +163,8 @@ export default function FrameStory() {
   const stageRef = useRef(null);
   const canvasRef = useRef(null);
   const readoutRef = useRef(null);
+  const reelRef = useRef(null);
+  const activeIndexRef = useRef(0);
   const { lang, t } = useLang();
   storyLocale = lang === 'vi' ? 'vi-VN' : 'en-US';
   const texts = t('story.chapters');
@@ -181,10 +183,28 @@ export default function FrameStory() {
   chaptersRef.current = chapters;
 
   useEffect(() => {
+    const readout = readoutRef.current;
+    const reel = reelRef.current;
+    const chapter = chaptersRef.current[activeIndexRef.current];
+    if (!chapter) return;
+    if (readout) {
+      const unitEl = readout.querySelector('.fs-readout__unit');
+      const captionEl = readout.querySelector('.fs-readout__caption');
+      if (unitEl) unitEl.textContent = chapter.unit;
+      if (captionEl) captionEl.textContent = chapter.caption;
+    }
+    if (reel) {
+      const nameEl = reel.querySelector('.fs-reel__name');
+      if (nameEl) nameEl.textContent = chapter.label;
+    }
+  }, [lang]);
+
+  useEffect(() => {
     const track = trackRef.current;
     const stage = stageRef.current;
     const canvas = canvasRef.current;
     const readout = readoutRef.current;
+    const reel = reelRef.current;
     if (!track || !stage || !canvas || !readout) return undefined;
 
     const ctx = canvas.getContext('2d', { alpha: false });
@@ -196,6 +216,8 @@ export default function FrameStory() {
     const valueEl = readout.querySelector('.fs-readout__value');
     const unitEl = readout.querySelector('.fs-readout__unit');
     const captionEl = readout.querySelector('.fs-readout__caption');
+    const reelIndexEl = reel?.querySelector('.fs-reel__index');
+    const reelNameEl = reel?.querySelector('.fs-reel__name');
 
     const frames = new Array(COUNT);
     const chapterState = CHAPTERS.map(() => ({ enter: '', exit: '', on: null }));
@@ -286,9 +308,12 @@ export default function FrameStory() {
     const setActive = (index) => {
       if (index === activeIndex) return;
       activeIndex = index;
+      activeIndexRef.current = index;
       const chapter = chaptersRef.current[index];
       unitEl.textContent = chapter.unit;
       captionEl.textContent = chapter.caption;
+      if (reelIndexEl) reelIndexEl.textContent = String(index + 1).padStart(2, '0');
+      if (reelNameEl) reelNameEl.textContent = chapter.label;
       railEls.forEach((el, railIndex) => {
         el.classList.toggle('is-active', railIndex === index);
         el.classList.toggle('is-past', railIndex < index);
@@ -338,7 +363,17 @@ export default function FrameStory() {
         lastValue = value;
       }
 
+      const openGate = smooth(0, 0.085, progress);
+      const exitGate = smooth(0.88, 1.0, progress);
+      const steamHeat =
+        0.28 +
+        0.55 * (smooth(0.18, 0.34, progress) * (1 - smooth(0.55, 0.72, progress))) +
+        0.72 * smooth(0.8, 0.94, progress);
+
       stage.style.setProperty('--p', progress.toFixed(4));
+      stage.style.setProperty('--open', openGate.toFixed(4));
+      stage.style.setProperty('--exit', exitGate.toFixed(4));
+      stage.style.setProperty('--steam', clamp01(steamHeat).toFixed(3));
       stage.style.setProperty('--cue', (1 - smooth(0, 0.025, progress)).toFixed(3));
     };
 
@@ -346,7 +381,7 @@ export default function FrameStory() {
       const rect = track.getBoundingClientRect();
       const max = rect.height - window.innerHeight;
       const progress = max > 0 ? clamp01(-rect.top / max) : 0;
-      html.classList.toggle('story-active', rect.top <= 1 && rect.bottom > (header ? header.offsetHeight : 72));
+      html.classList.toggle('story-active', rect.top <= 1 && rect.bottom > (header ? header.offsetHeight + 10 : 82));
       return progress;
     };
 
@@ -430,80 +465,120 @@ export default function FrameStory() {
       ))}
 
       <div className="fs-stage" ref={stageRef}>
-        <div className="fs-media" aria-hidden="true">
-          <canvas className="fs-canvas" ref={canvasRef} />
-        </div>
-        <div className="fs-scrim" aria-hidden="true" />
-        <div className="fs-grain" aria-hidden="true" />
+        <div className="fs-exit-backdrop" aria-hidden="true" />
+        <div className="fs-cinema">
+          <div className="fs-media" aria-hidden="true">
+            <canvas className="fs-canvas" ref={canvasRef} />
+          </div>
+          <div className="fs-scrim" aria-hidden="true" />
+          <div className="fs-lightleak" aria-hidden="true" />
+          <div className="fs-steam" aria-hidden="true">
+            <span className="fs-steam__wisp fs-steam__wisp--a" />
+            <span className="fs-steam__wisp fs-steam__wisp--b" />
+            <span className="fs-steam__wisp fs-steam__wisp--c" />
+          </div>
+          <div className="fs-grain" aria-hidden="true" />
 
-        <div className="fs-copy">
-          {chapters.map((chapter, index) => (
-            <article
-              className={`fs-chapter fs-chapter--${chapter.side}${index === 0 ? ' fs-chapter--opening' : ''}`}
-              data-chapter={chapter.id}
-              data-on={index === 0 ? '1' : '0'}
-              key={chapter.id}
-            >
-              {index === 0 ? (
-                <h1 className="fs-title">
-                  <span className="fs-line">
-                    <span className="fs-line__in fs-rise" style={{ '--i': 0 }}>An</span>
-                  </span>
-                  <span className="fs-line fs-title__indent">
-                    <span className="fs-line__in fs-rise" style={{ '--i': 1 }}>Roastery</span>
-                  </span>
-                </h1>
-              ) : (
-                <h2 className="fs-heading">
-                  <Lines lines={chapter.heading} />
-                </h2>
-              )}
-              <p className={`fs-body${index === 0 ? ' fs-rise' : ''}`} style={{ '--i': 2 }}>
-                {chapter.body}
-              </p>
-              {chapter.actions && (
-                <div className="fs-actions">
-                  <a className="fs-btn fs-btn--solid" href="#thuc-don">{t('story.viewMenu')}</a>
-                  <a className="fs-btn" href="#dat-ban">{t('story.book')}</a>
-                </div>
-              )}
-            </article>
-          ))}
-        </div>
+          <div className="fs-aperture" aria-hidden="true">
+            <span className="fs-letterbox fs-letterbox--top">
+              <span className="fs-letterbox__bar fs-letterbox__bar--top" />
+            </span>
+            <span className="fs-letterbox fs-letterbox--bottom">
+              <span className="fs-letterbox__bar fs-letterbox__bar--bottom" />
+            </span>
+            <span className="fs-frame-line" />
+          </div>
 
-        <div className="fs-readout" ref={readoutRef} aria-hidden="true">
-          <p className="fs-readout__figure">
-            <span className="fs-readout__value">{chapters[0].value(0)}</span>
-            <span className="fs-readout__unit">{chapters[0].unit}</span>
-          </p>
-          <p className="fs-readout__caption">{chapters[0].caption}</p>
-        </div>
+          <div className="fs-reel" ref={reelRef} aria-hidden="true">
+            <span className="fs-reel__tag">{t('story.reelTag')}</span>
+            <span className="fs-reel__index">01</span>
+            <span className="fs-reel__sep">/ {String(chapters.length).padStart(2, '0')}</span>
+            <span className="fs-reel__dot" />
+            <span className="fs-reel__name">{chapters[0].label}</span>
+          </div>
 
-        <nav className="fs-rail" aria-label={t('story.railLabel')}>
-          <span className="fs-rail__track" aria-hidden="true">
-            <span className="fs-rail__fill" />
-          </span>
-          <ol>
+          <div className="fs-copy">
             {chapters.map((chapter, index) => (
-              <li key={chapter.id} style={{ '--at': WINDOWS[index].start }}>
-                <a
-                  href={`#hanh-trinh-${chapter.id}`}
-                  data-rail={chapter.id}
-                  className={index === 0 ? 'is-active' : undefined}
-                >
-                  <span className="fs-rail__label">{chapter.label}</span>
-                  <span className="fs-rail__tick" aria-hidden="true" />
-                </a>
-              </li>
+              <article
+                className={`fs-chapter fs-chapter--${chapter.side}${index === 0 ? ' fs-chapter--opening' : ''}`}
+                data-chapter={chapter.id}
+                data-on={index === 0 ? '1' : '0'}
+                key={chapter.id}
+              >
+                {index === 0 ? (
+                  <>
+                    <p className="fs-eyebrow fs-rise" style={{ '--i': 0 }}>
+                      <span className="fs-eyebrow__rule" aria-hidden="true" />
+                      <span>{t('story.eyebrow')}</span>
+                    </p>
+                    <h1 className="fs-title">
+                      <span className="fs-line">
+                        <span className="fs-line__in fs-rise" style={{ '--i': 1 }}>An</span>
+                      </span>
+                      <span className="fs-line fs-title__indent">
+                        <span className="fs-line__in fs-rise" style={{ '--i': 2 }}>Roastery</span>
+                      </span>
+                    </h1>
+                  </>
+                ) : (
+                  <>
+                    <p className="fs-chapter__meta" aria-hidden="true">
+                      <span>{String(index + 1).padStart(2, '0')} / {String(chapters.length).padStart(2, '0')}</span>
+                      <span className="fs-chapter__meta-sep" />
+                      <span>{chapter.label}</span>
+                    </p>
+                    <h2 className="fs-heading">
+                      <Lines lines={chapter.heading} />
+                    </h2>
+                  </>
+                )}
+                <p className={`fs-body${index === 0 ? ' fs-rise' : ''}`} style={{ '--i': index === 0 ? 3 : 2 }}>
+                  {chapter.body}
+                </p>
+                {chapter.actions && (
+                  <div className="fs-actions">
+                    <a className="fs-btn fs-btn--solid" href="#thuc-don">{t('story.viewMenu')}</a>
+                    <a className="fs-btn" href="#dat-ban">{t('story.book')}</a>
+                  </div>
+                )}
+              </article>
             ))}
-          </ol>
-        </nav>
+          </div>
 
-        <p className="fs-cue" aria-hidden="true">
-          <span className="fs-cue__line" />
-          {t('story.cue')}
-        </p>
-        <span className="fs-bar" aria-hidden="true" />
+          <div className="fs-readout" ref={readoutRef} aria-hidden="true">
+            <p className="fs-readout__figure">
+              <span className="fs-readout__value">{chapters[0].value(0)}</span>
+              <span className="fs-readout__unit">{chapters[0].unit}</span>
+            </p>
+            <p className="fs-readout__caption">{chapters[0].caption}</p>
+          </div>
+
+          <nav className="fs-rail" aria-label={t('story.railLabel')}>
+            <span className="fs-rail__track" aria-hidden="true">
+              <span className="fs-rail__fill" />
+            </span>
+            <ol>
+              {chapters.map((chapter, index) => (
+                <li key={chapter.id} style={{ '--at': WINDOWS[index].start }}>
+                  <a
+                    href={`#hanh-trinh-${chapter.id}`}
+                    data-rail={chapter.id}
+                    className={index === 0 ? 'is-active' : undefined}
+                  >
+                    <span className="fs-rail__label">{chapter.label}</span>
+                    <span className="fs-rail__tick" aria-hidden="true" />
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+
+          <p className="fs-cue" aria-hidden="true">
+            <span className="fs-cue__line" />
+            <span>{t('story.cue')}</span>
+          </p>
+          <span className="fs-bar" aria-hidden="true" />
+        </div>
       </div>
     </section>
   );
