@@ -271,7 +271,7 @@ export function PublicFooter() {
           </div>
         </div>
         <div className="hp-footer__bottom">
-          <p>© {new Date().getFullYear()} An Roastery</p>
+          <p>© {new Date().getFullYear()} An Roastery · Designed and built by Trần Huy Hoàng, 2026.</p>
           <div className="hp-footer__legal">
             <Link to="/sustainability">{t('footer.privacy')}</Link>
             <Link to="/business-solutions">{t('footer.terms')}</Link>
